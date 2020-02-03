@@ -18,27 +18,27 @@ def run_client(host, port):
 # Function to send out bytes of data from filename
 def send_file(filename, s):
 
-	# opening a file
-	f = open(filename, 'rb')
+    # opening a file
+    f = open(filename, 'rb')
 
-	# read bytes and set up counter
-	l = f.read(BYTES_TO_SEND)
-	byte = BYTES_TO_SEND
+    # read bytes and set up counter
+    l = f.read(BYTES_TO_SEND)
+    byte = BYTES_TO_SEND
 
-	# a forever loop untill file gets sent
-	while (l):
+    # a forever loop untill file gets sent
+    while (l):
 \
-		# send the bytes
-		s.send(l)
+        # send the bytes
+        s.send(l)
 
-		# read more bytes and incrementing counter
-		l = f.read(BYTES_TO_SEND)
-		byte += BYTES_TO_SEND
+        # read more bytes and incrementing counter
+        l = f.read(BYTES_TO_SEND)
+        byte += BYTES_TO_SEND
 
-	print(byte, "bytes sent")
+    print(byte, "bytes sent")
 
-	# Close the connection with the client
-	s.close()
+    # Close the connection with the client
+    s.close()
 
 # Receives a file
 def receive_file(s):
