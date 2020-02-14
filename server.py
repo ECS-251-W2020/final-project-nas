@@ -57,7 +57,7 @@ def run_server():
         print('Got connection from', addr)
 
         # recieve request and call relevant function
-        get_request(c, addr)
+        get_request(c)
 
         # terminal output
         print("*************************************")
@@ -78,7 +78,7 @@ def check_request(request):
         return False
 
     # have only pull or push request
-    if (request.split()[0].lower() not in ["pull", "push"]):
+    if (request.split()[0].lower() not in ["pull", "push", "ledger"]):
         return False
 
     return True
@@ -124,7 +124,7 @@ def send_ledger(c):
 
     # open the ledger if it exists
     try:
-        f = open(LEDGER_PATH, 'rb')
+        f = open(ledger.LEDGER_PATH, 'rb')
     except:
         send_error(c, "Error 176: Ledger doesn't exist on server machine")
         c.close()

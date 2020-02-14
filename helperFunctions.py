@@ -1,4 +1,5 @@
 import socket
+REQUEST_MAX_LENGTH = 100
 
 #
 # Pad a request string to REQUEST_MAX_LENGTH
