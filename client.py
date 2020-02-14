@@ -106,7 +106,7 @@ def receive_file(s, filename):
 def get_ledger(s):
 
     # create a new node request for the server and encode it to bytes
-    cmd = pad_string("ledger")
+    cmd = pad_string("ledger ledger.json")
     s.send(cmd.encode())
 
     # recieve confirmation response from server
