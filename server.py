@@ -3,8 +3,8 @@ import socket
 import signal
 import sys
 import time
-import helperFunctions
-import ledgerFunctions
+from helperFunctions import pad_string, find_ip
+import ledgerFunctions as ledger
 
 # macro for min bytes
 BYTES_TO_SEND = 1024
@@ -57,7 +57,7 @@ def run_server():
         print('Got connection from', addr)
 
         # recieve request and call relevant function
-        get_request(c)
+        get_request(c, addr)
 
         # terminal output
         print("*************************************")

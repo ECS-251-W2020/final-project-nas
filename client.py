@@ -1,8 +1,8 @@
 import socket
 import sys
 import time
-import helperFunctions
-import ledgerFunctions
+from helperFunctions import pad_string, find_ip
+import ledgerFunctions as ledger
 
 BYTES_TO_SEND = 1024
 REQUEST_MAX_LENGTH = 100
@@ -117,7 +117,7 @@ def get_ledger(s):
 
         print("Downloading ledger")
         #open a new ledger and store the received bytes
-        file = open(LEDGER_PATH, 'wb')
+        file = open(ledger.LEDGER_PATH, 'wb')
         start = time.time()
 
         while True:
@@ -140,7 +140,7 @@ def get_ledger(s):
         print("Something went wrong while getting the ledger.")
 
     # Update ledger with ip of client
-    ledger_add_node(find_ip())
+    ledger.add_node(find_ip())
 
     # Send updated ledger to all serversin the network
     #for ip in ledger_get_ips():

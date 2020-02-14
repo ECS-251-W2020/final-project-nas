@@ -28,7 +28,7 @@ def get_new_id(data):
 #
 # Function to add a node to the ledger file
 #
-def ledger_add_node(ip):
+def add_node(ip):
 
 	# checks if ledger file exists
 	if (path.exists(LEDGER_PATH) == False):
@@ -58,7 +58,7 @@ def ledger_add_node(ip):
 #
 # Function to get the list of ips from the ledger
 #
-def ledger_get_ips():
+def get_ips():
 
 	# checks if ledger file exists
 	if (path.exists(LEDGER_PATH) == False):

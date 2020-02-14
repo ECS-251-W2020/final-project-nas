@@ -15,3 +15,6 @@ def find_ip():
     ip = str(s.getsockname()[0])
     s.close()
     return ip;
+
+
+print(find_ip())
