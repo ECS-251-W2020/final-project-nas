@@ -1,8 +1,8 @@
 import socket
 import sys
 import time
-import "helperFunctions"
-import "ledgerFunctions"
+import helperFunctions
+import ledgerFunctions
 
 BYTES_TO_SEND = 1024
 REQUEST_MAX_LENGTH = 100
@@ -157,6 +157,8 @@ def main():
         send_file(s, sys.argv[2])
     if(sys.argv[1] == "pull"):
         receive_file(s, sys.argv[2])
+    if(sys.argv[1] == "ledger"):
+        receive_file(s)
 
     s.close()
 

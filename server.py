@@ -3,8 +3,8 @@ import socket
 import signal
 import sys
 import time
-import "helperFunctions"
-import "ledgerFunctions"
+import helperFunctions
+import ledgerFunctions
 
 # macro for min bytes
 BYTES_TO_SEND = 1024
