@@ -57,7 +57,7 @@ def run_server():
         print('Got connection from', addr)
 
         # recieve request and call relevant function
-        get_request(c, addr)
+        get_request(c)
 
         # terminal output
         print("*************************************")

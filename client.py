@@ -13,7 +13,6 @@ def run_client(host, port=12345):
 
     #creates a new socket
     s = socket.socket()
-
     #connect the socket to the given host
     s.connect((host, port))
     print("Connected to host")
@@ -144,21 +143,22 @@ def get_ledger(s):
     ledger_add_node(find_ip())
 
     # Send updated ledger to all serversin the network
-    for ip in ledger_get_ips():
+    #for ip in ledger_get_ips():
         #update ledger
 
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
 #
 def main():
-    s = run_client("10.0.0.160", 12345)
+    #s = run_client("10.0.0.160", 12345)
+    s = run_client("172.20.10.3", 12345)
 
     if(sys.argv[1] == "push"):
         send_file(s, sys.argv[2])
     if(sys.argv[1] == "pull"):
         receive_file(s, sys.argv[2])
     if(sys.argv[1] == "ledger"):
-        receive_file(s)
+        get_ledger(s)
 
     s.close()
 
