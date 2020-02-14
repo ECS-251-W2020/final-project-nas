@@ -1,13 +1,15 @@
 import socket
 import sys
 import time
+import "helperFunctions"
+import "ledgerFunctions"
 
 BYTES_TO_SEND = 1024
 REQUEST_MAX_LENGTH = 100
 #
 # Creates a socket that has a connection with the specied host and port
 #
-def run_client(host, port):
+def run_client(host, port=12345):
 
     #creates a new socket
     s = socket.socket()
@@ -99,10 +101,51 @@ def receive_file(s, filename):
         print("Something went wrong.")
 
 #
-# Pads a string to REQUEST_MAX_LEN characters
+# Gets a copy of the current ledger from a known host, adds itself,
+# and broadcasts to all servers
 #
-def pad_string(message):
-    return message + ((REQUEST_MAX_LENGTH - len(message)) * ' ')
+def get_ledger(s):
+
+    # create a new node request for the server and encode it to bytes
+    cmd = pad_string("ledger")
+    s.send(cmd.encode())
+
+    # recieve confirmation response from server
+    receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
+    print(receivedMessage)
+
+    if(receivedMessage.split(' ', 1)[0] != "Error"):
+
+        print("Downloading ledger")
+        #open a new ledger and store the received bytes
+        file = open(LEDGER_PATH, 'wb')
+        start = time.time()
+
+        while True:
+
+            #receive 1024 bytes at a time and write them to a file
+            bytes = s.recv(1024)
+            file.write(bytes)
+
+            #break infinite loop once all bytes are transferred
+            if not bytes:
+                break
+
+        #close the file once transfer is complete
+        file.close()
+        end = time.time()
+        print("Finished running download of ledger in %.2f seconds" %  float(end - start))
+
+    # Server responded with an error
+    else:
+        print("Something went wrong while getting the ledger.")
+
+    # Update ledger with ip of client
+    ledger_add_node(find_ip())
+
+    # Send updated ledger to all serversin the network
+    for ip in ledger_get_ips():
+        #update ledger
 
 #
 # Deals with creating the client node as well as providing the main command line interface for the program

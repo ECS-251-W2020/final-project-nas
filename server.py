@@ -3,6 +3,8 @@ import socket
 import signal
 import sys
 import time
+import "helperFunctions"
+import "ledgerFunctions"
 
 # macro for min bytes
 BYTES_TO_SEND = 1024
@@ -25,47 +27,40 @@ def handle_interrupt():
 #
 def run_server():
 
-    # starting up server        
+    # starting up server
     print("Starting up server.....")
- 
+
     # reserve a port on your computer
-    port = 12345       
+    port = 12345
 
     # get the current hostname and ip
-    hostName = socket.gethostname() 
-    hostIp = socket.gethostbyname(hostName)    
+    hostName = socket.gethostname()
+    hostIp = socket.gethostbyname(hostName)
 
     # bind the port with the socket
-    s.bind(("", port))        
+    s.bind(("", port))
     print("Server running on", port)
 
     # put the socket into listening mode to connect
-    s.listen(CLIENTS_ALLOWED)     
-    print("Socket is listening")          
+    s.listen(CLIENTS_ALLOWED)
+    print("Socket is listening")
 
     # a forever loop until we interrupt it or error occyrs
     while True:
 
 
         # establish connection with client.
-        c, addr = s.accept() 
-        
-        # terminal output
-        print("*************************************")    
-        print('Got connection from', addr)
-
-        # recieve request and call relevant function
-        get_request(c)
+        c, addr = s.accept()
 
         # terminal output
         print("*************************************")
+        print('Got connection from', addr)
 
+        # recieve request and call relevant function
+        get_request(c, addr)
 
-#
-# Function to pad requests with correct format
-#
-def pad_string(message):
-    return message + ((REQUEST_MAX_LENGTH - len(message)) * ' ')
+        # terminal output
+        print("*************************************")
 
 #
 # Function to check request format
@@ -120,20 +115,61 @@ def get_request(c):
     elif (requestType == "push"):
         receive_file(c, filename)
 
+    elif (requestType == "ledger"):
+        send_ledger(c)
+
+
+def send_ledger(c):
+    start = time.time()
+
+    # open the ledger if it exists
+    try:
+        f = open(LEDGER_PATH, 'rb')
+    except:
+        send_error(c, "Error 176: Ledger doesn't exist on server machine")
+        c.close()
+        return
+
+    # send confirmation
+    c.send(pad_string("Server is ready to send ledger").encode())
+
+    # read bytes and set up counter
+    l = f.read(BYTES_TO_SEND)
+    byte = BYTES_TO_SEND
+
+    # a forever loop untill file gets sent
+    while (l):
+
+        # send the bytes
+        c.send(l)
+
+        # read more bytes and incrementing counter
+        l = f.read(BYTES_TO_SEND)
+        byte += BYTES_TO_SEND
+
+    # time and space prints
+    end = time.time()
+    print("Finished running download of ledger in %.2f seconds" %  float(end - start))
+    print(byte, "bytes sent")
+
+    # Close the connection with the client
+    c.close()
+
+
 #
 # Function to send out bytes of data from filename
 #
 def send_file(c, filename):
 
     start = time.time()
-    
+
     # opening a file if possible
     try:
         f = open("directory/" + filename, 'rb')
     except:
         send_error(c, "Error 176: File doesn't exist on server machine")
         c.close()
-        return 
+        return
 
     # send confirmation
     c.send(pad_string("Server is ready to send file").encode())
@@ -145,7 +181,7 @@ def send_file(c, filename):
     # a forever loop untill file gets sent
     while (l):
 
-        # send the bytes    
+        # send the bytes
         c.send(l)
 
         # read more bytes and incrementing counter
@@ -158,7 +194,7 @@ def send_file(c, filename):
     print(byte, "bytes sent")
 
     # Close the connection with the client
-    c.close()   
+    c.close()
 
 #
 # Receives a file
@@ -175,7 +211,7 @@ def receive_file(c, filename):
     c.send(pad_string("Server is ready to recieve file").encode())
 
     while True:
-        
+
         # receive 1024 bytes at a time and write them to a file
         bytes = c.recv(BYTES_TO_SEND)
         file.write(bytes)
@@ -198,7 +234,7 @@ def receive_file(c, filename):
 try:
     # calls the main function to run the server
     run_server()
-    
+
 # handling the keyboard interrupt
 except KeyboardInterrupt:
     handle_interrupt()
