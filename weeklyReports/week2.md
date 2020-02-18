@@ -1,4 +1,4 @@
-# NAS: Week 1
+# NAS: Week 2
 
 Last Week:
 * Added new node functionality to the network (N, A)
@@ -10,8 +10,18 @@ Last Week:
 	*  Created a graphical user interface using PyQT, a python GUI framework, and added features such as submit buttons, time API’s, text entries etc. (S)
 
 Next Week:
-* We will focus on allowing sharding of files and allowing user to send it to every network. (N, S)
+* We will focus on allowing sharding of files and allowing user to send it to every node in the network. (N, S)
 * Reading files will be allowed and only to the user who owns it (A)
 * Maybe allow writes
+
+Problems:
+* Tkinter was very buggy and made us change our python framwork.
+* Design decisions for server client communication took some time to finalize.
+
+Trello:
+https://trello.com/b/g4gOwG0G/nas
+
+Commits:
+Commits can be accessed in the commits section of the repository
 
 **Note : N = Neil, A = Aakaash, S = Sutej**
