@@ -78,7 +78,7 @@ def check_request(request):
         return False
 
     # have only pull or push request
-    if (request.split()[0].lower() not in ["pull", "push", "ledger"]):
+    if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger"]):
         return False
 
     return True
@@ -115,10 +115,52 @@ def get_request(c):
     elif (requestType == "push"):
         receive_file(c, filename)
 
-    elif (requestType == "ledger"):
+    # send a copy of the ledger to the client
+    elif (requestType == "pull_ledger"):
         send_ledger(c)
 
+    # send a copy of the ledger to the client
+    elif (requestType == "update_ledger"):
+        update_ledger(c, filename)
 
+#
+# Function to update the ledger with the new stuff to the client
+#
+def update_ledger(c, filename):
+
+    # start with the time
+    start = time.time()
+
+    # open a temporary file to store the received bytes
+    file = open(filename, 'wb')
+    byte = 0
+
+    # send confirmation
+    c.send(pad_string("Server is ready to update its ledger").encode())
+
+    while True:
+
+        # receive 1024 bytes at a time and write them to a file
+        bytes = c.recv(BYTES_TO_SEND)
+        file.write(bytes)
+        byte += BYTES_TO_SEND
+
+        # break infinite loop once all bytes are transferred
+        if not bytes:
+            break
+
+    # close the file once transfer is complete
+    file.close()
+
+    # time and space prints
+    end = time.time()
+    print("Finished running download of file %s in %.2f seconds" % (filename, float(end - start)))
+    print(byte, "bytes sent")
+
+
+#
+# Function to send the ledger to the new client
+#
 def send_ledger(c):
     start = time.time()
 
@@ -152,7 +194,7 @@ def send_ledger(c):
     print("Finished running download of ledger in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
 
-    # Close the connection with the client
+    # close the connection with the client
     c.close()
 
 
