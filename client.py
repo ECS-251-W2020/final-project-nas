@@ -15,7 +15,7 @@ def run_client(host, port=12345):
     s = socket.socket()
     #connect the socket to the given host
     s.connect((host, port))
-    print("Connected to host")
+    print("Connected to host", host)
 
     #return the socket once created
     return s
@@ -103,10 +103,10 @@ def receive_file(s, filename):
 # Gets a copy of the current ledger from a known host, adds itself,
 # and broadcasts to all servers
 #
-def get_ledger(s):
+def pull_ledger(s):
 
     # create a new node request for the server and encode it to bytes
-    cmd = pad_string("ledger ledger.json")
+    cmd = pad_string("pull_ledger ledger.json")
     s.send(cmd.encode())
 
     # recieve confirmation response from server
@@ -139,13 +139,51 @@ def get_ledger(s):
     else:
         print("Something went wrong while getting the ledger.")
 
+    s.close()
+
     # Update ledger with ip of client
     ledger.add_node(find_ip())
 
     # Send updated ledger to all serversin the network
-    #for ip in ledger_get_ips():
-        #update ledger
+    update_ledger()
 
+def update_ledger():
+    for ip in ledger.get_ips():
+        if ip != find_ip():
+            s = run_client(ip)
+            # create a push request for the server and encode it to bytes
+            cmd = pad_string("update_ledger ledger.json")
+            s.send(cmd.encode())
+
+            # recieve response from server
+            recv = s.recv(REQUEST_MAX_LENGTH).decode()
+            print(recv)
+
+            # check if the servor responded with an error
+            if(recv.split(' ', 1)[0] != "Error"):
+
+                # opening a file
+                f = open(ledger.LEDGER_PATH, 'rb')
+
+                # read bytes and set up counter
+                l = f.read(BYTES_TO_SEND)
+                byte = BYTES_TO_SEND
+
+                # a forever loop untill file gets sent
+                while (l):
+
+                    # send the bytes
+                    s.send(l)
+
+                    # read more bytes and incrementing counter
+                    l = f.read(BYTES_TO_SEND)
+                    byte += BYTES_TO_SEND
+
+                print(byte, "bytes sent")
+
+            # server did respond with error
+            else:
+                print("Something went wrong while updating the ledger to", s.gethostname())
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
 #
@@ -157,8 +195,10 @@ def main():
         send_file(s, sys.argv[2])
     if(sys.argv[1] == "pull"):
         receive_file(s, sys.argv[2])
-    if(sys.argv[1] == "ledger"):
-        get_ledger(s)
+    if(sys.argv[1] == "pull_ledger"):
+        pull_ledger(s)
+    if(sys.argv[1] == "update_ledger"):
+        update_ledger()
 
     s.close()
 
