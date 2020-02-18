@@ -191,7 +191,7 @@ def send_ledger(c):
 
     # time and space prints
     end = time.time()
-    print("Finished running download of ledger in %.2f seconds" %  float(end - start))
+    print("Sent ledger in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
 
     # close the connection with the client
