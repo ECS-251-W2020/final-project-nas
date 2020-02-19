@@ -2,20 +2,20 @@
 
 Last Week:
 * Added new node functionality to the network (N, A)
-    * Built out a clientside and server API for new node creation to synchronize it throughout the entire network. (N)
-    * API supports both adding a node to the network and also sending updates to the entire network. (N, A)
-    * Created a created a helper library for all ledger related functions, which include local modification and parsing. (A)
-* GUI Application that interfaces with the server and clientside libraries (S)
-	* Tried to create a GUI using Tkinter Python framework, failed due bug in mac (S)
+    * Created a client and server API for the creation of a new node to synchronize it throughout the entire network. (N)
+    * API supports both addition of a new node to the network and also sending updates to the entire network. (N, A)
+    * Created a helper library for all ledger related functions, which include local modification and parsing. (A)
+* GUI Application that interfaces with the server and client-side libraries (S)
+	* Tried to create a GUI using Tkinter Python framework, failed due to a bug in macOS (S)
 	*  Created a graphical user interface using PyQT, a python GUI framework, and added features such as submit buttons, time API’s, text entries etc. (S)
 
 Next Week:
-* We will focus on allowing sharding of files and allowing user to send it to every node in the network. (N, S)
-* Reading files will be allowed and only to the user who owns it (A)
+* We will focus on allowing sharding of files and allowing a user to send files to every node in the network. (N, S)
+* Reading files will be allowed only to the user who owns it (A)
 * Maybe allow writes
 
 Problems:
-* Tkinter was very buggy and made us change our python framwork.
+* Tkinter was very buggy and made us change our python framework.
 * Design decisions for server client communication took some time to finalize.
 
 Trello:
