@@ -2,14 +2,24 @@
 import socket
 import signal
 import sys
+import os
 import time
 from helperFunctions import pad_string, find_ip
 import ledgerFunctions as ledger
+
+import threading
+from _thread import *
 
 # macro for min bytes
 BYTES_TO_SEND = 1024
 CLIENTS_ALLOWED = 5
 REQUEST_MAX_LENGTH = 100
+
+# lock for esuring only one connection is active at a time
+connectionLock = threading.Lock()
+
+# Write lock that stores the IP address of the client that is performing a write
+serverLock = ""
 
 # global socket declaration
 s = socket.socket()
@@ -45,7 +55,7 @@ def run_server():
     s.listen(CLIENTS_ALLOWED)
     print("Socket is listening")
 
-    # a forever loop until we interrupt it or error occyrs
+    # a forever loop until we interrupt it or error occurs
     while True:
 
 
@@ -56,8 +66,11 @@ def run_server():
         print("*************************************")
         print('Got connection from', addr)
 
+        # Acquire the lock for the current connection
+        connectionLock.acquire()
+
         # recieve request and call relevant function
-        get_request(c)
+        start_new_thread(get_request, (c,addr))
 
         # terminal output
         print("*************************************")
@@ -94,7 +107,7 @@ def send_error(c, errorMessage):
 #
 # Function to recieve requests from the client
 #
-def get_request(c):
+def get_request(c, addr):
 
     # read the request from the client
     request = c.recv(REQUEST_MAX_LENGTH).decode()
@@ -112,21 +125,26 @@ def get_request(c):
         send_file(c, filename)
 
     # recieve request
-    elif (requestType == "push"):
-        receive_file(c, filename)
+    elif (requestType == "push" and serverLock != ""):
+        receive_file(c, filename, addr)
 
     # send a copy of the ledger to the client
-    elif (requestType == "pull_ledger"):
-        send_ledger(c)
+    elif (requestType == "pull_ledger" and serverLock != ""):
+        send_ledger(c, addr)
 
     # send a copy of the ledger to the client
-    elif (requestType == "update_ledger"):
-        update_ledger(c, filename)
+    elif (requestType == "update_ledger" and serverLock != ""):
+        update_ledger(c, filename, addr)
+
+    else:
+        send_error(c, "Error 123: Server currently performing write or updating ledger from %s. Try again some other time." % (addr))
 
 #
 # Function to update the ledger with the new stuff to the client
 #
-def update_ledger(c, filename):
+def update_ledger(c, filename, addr):
+
+    serverLock = addr
 
     # start with the time
     start = time.time()
@@ -157,11 +175,13 @@ def update_ledger(c, filename):
     print("Finished running download of file %s in %.2f seconds" % (filename, float(end - start)))
     print(byte, "bytes sent")
 
+    serverLock = ""
 
 #
 # Function to send the ledger to the new client
 #
-def send_ledger(c):
+def send_ledger(c, addr):
+    serverLock = addr
     start = time.time()
 
     # open the ledger if it exists
@@ -169,6 +189,9 @@ def send_ledger(c):
         f = open(ledger.LEDGER_PATH, 'rb')
     except:
         send_error(c, "Error 176: Ledger doesn't exist on server machine")
+
+        #Release the lock once connection is done
+        connectionLock.release()
         c.close()
         return
 
@@ -194,9 +217,12 @@ def send_ledger(c):
     print("Sent ledger in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
 
+    #Release the lock once connection is done
+    connectionLock.release()
+
     # close the connection with the client
     c.close()
-
+    serverLock = ""
 
 #
 # Function to send out bytes of data from filename
@@ -210,6 +236,10 @@ def send_file(c, filename):
         f = open("directory/" + filename, 'rb')
     except:
         send_error(c, "Error 176: File doesn't exist on server machine")
+
+        #Release the lock once connection is done
+        connectionLock.release()
+
         c.close()
         return
 
@@ -235,18 +265,27 @@ def send_file(c, filename):
     print("Finished running download of file in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
 
+    #Release the lock once connection is done
+    connectionLock.release()
+
     # Close the connection with the client
     c.close()
 
 #
 # Receives a file
 #
-def receive_file(c, filename):
+def receive_file(c, filename, addr):
 
+    serverLock = addr
     start = time.time()
 
     # open a temporary file to store the received bytes
-    file = open("directory/" + filename, 'wb')
+    try:
+        file = open("fico/" + filename, 'wb')
+    except:
+        os.system("mkdir fico")
+        file = open("fico/" + filename, 'wb')
+    
     byte = 0
 
     # send confirmation
@@ -271,7 +310,7 @@ def receive_file(c, filename):
     print("Finished running download of file %s in %.2f seconds" % (filename, float(end - start)))
     print(byte, "bytes sent")
 
-
+    serverLock = ""
 
 try:
     # calls the main function to run the server
