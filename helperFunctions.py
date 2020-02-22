@@ -33,14 +33,14 @@ def splitData(data, nodes):
 	# going over the number of nodes to create each string
 	for num in range(nodes):
 
-		# temporary byte string
-		temp_string = "".encode()
+		# get the chunk size
+		chunk = (len(data)/nodes) + 1
 
-		# going over the byte string skipping nodes num of characgers
-		for byte_num in range(num, len(data), nodes):
-
-			# adding this byte slice or byte char
-			temp_string += data[byte_num:(byte_num + 1)]
+		# if that many bytes our not possible do till end
+		if((num + 1) * chunk < len(data)):
+			temp_string = data[int(num * chunk): int((num + 1) * chunk)]
+		else:
+			temp_string = data[int(num * chunk):]
 
 		# appending to the array
 		outputArray.append(temp_string)
@@ -58,19 +58,11 @@ def retrieveData(data_array):
 	# declaring the output bytestring
 	outputData = "".encode()
 
-	# going over each byte char
-	# first element will always be the longest
-	for byte_num in range(len(data_array[0])): 
+	# going though the array one by one
+	for data in data_array:
 
-		# going over the array
-		for byte_string in data_array:
-
-			# checking if length not exceeded
-			if(byte_num < len(byte_string)):
-
-				# add it to the output
-				outputData += byte_string[byte_num:byte_num+1]
+		# append each part
+		outputData += data
 
 	# byte string with all the data
 	return outputData
-
