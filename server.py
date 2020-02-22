@@ -82,9 +82,9 @@ def check_request(request):
     # have to have at most two strings separated
     if (len(request.split()) != 2):
         return False
-
+    print(request)
     # have only pull or push request
-    if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger"]):
+    if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger", "lock"]):
         return False
 
     return True
@@ -122,11 +122,11 @@ def get_request(c, ip):
 
     # recieve request
     elif (requestType == "push"):
-        receive_file(c, filename, addr)
+        receive_file(c, filename, ip)
 
     # send a copy of the ledger to the client
     elif (requestType == "pull_ledger"):
-        send_ledger(c, addr)
+        send_ledger(c, ip)
 
     # send a copy of the ledger to the client
     elif (requestType == "update_ledger"):
@@ -141,6 +141,7 @@ def get_request(c, ip):
 def lock_server(c, ip):
     if lock.unlocked():
         lock.acquire(ip)
+        print("Server locked by ", ip)
         c.send(helper.pad_string("Server locked").encode())
     else:
         send_error("Error 124: Server already locked")
@@ -186,7 +187,7 @@ def update_ledger(c, filename, ip):
 #
 # Function to send the ledger to the new client
 #
-def send_ledger(c, addr):
+def send_ledger(c, ip):
 
     start = time.time()
 
@@ -268,7 +269,7 @@ def send_file(c, filename):
 #
 # Receives a file
 #
-def receive_file(c, filename, addr):
+def receive_file(c, filename, ip):
 
     start = time.time()
 
