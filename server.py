@@ -15,9 +15,6 @@ BYTES_TO_SEND = 1024
 CLIENTS_ALLOWED = 5
 REQUEST_MAX_LENGTH = 100
 
-# lock for esuring only one connection is active at a time
-connectionLock = threading.Lock()
-
 # Write lock that stores the IP address of the client that is performing a write
 serverLock = ""
 
@@ -65,9 +62,6 @@ def run_server():
         # terminal output
         print("*************************************")
         print('Got connection from', addr)
-
-        # Acquire the lock for the current connection
-        connectionLock.acquire()
 
         # recieve request and call relevant function
         ip = str(addr[0])
@@ -191,8 +185,6 @@ def send_ledger(c, addr):
     except:
         send_error(c, "Error 176: Ledger doesn't exist on server machine")
 
-        #Release the lock once connection is done
-        connectionLock.release()
         c.close()
         return
 
@@ -218,9 +210,6 @@ def send_ledger(c, addr):
     print("Sent ledger in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
 
-    #Release the lock once connection is done
-    connectionLock.release()
-
     # close the connection with the client
     c.close()
     serverLock = ""
@@ -237,9 +226,6 @@ def send_file(c, filename):
         f = open("directory/" + filename, 'rb')
     except:
         send_error(c, "Error 176: File doesn't exist on server machine")
-
-        #Release the lock once connection is done
-        connectionLock.release()
 
         c.close()
         return
@@ -265,9 +251,6 @@ def send_file(c, filename):
     end = time.time()
     print("Finished running download of file in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
-
-    #Release the lock once connection is done
-    connectionLock.release()
 
     # Close the connection with the client
     c.close()
