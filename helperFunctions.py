@@ -3,6 +3,7 @@ REQUEST_MAX_LENGTH = 100
 
 #
 # Pad a request string to REQUEST_MAX_LENGTH
+# message => String
 #
 def pad_string(message):
     return message + ((REQUEST_MAX_LENGTH - len(message)) * ' ')
@@ -18,4 +19,50 @@ def find_ip():
     return ip;
 
 
-print(find_ip())
+# 
+# Returns an array of split up byte strings into 
+# data => ByteString
+# nodes => Int
+# eg splitData("abcd", 2) = ["ac", "bd"]
+#
+def splitData(data, nodes):
+
+	# declaring the output array
+	outputArray = []
+
+	# going over the number of nodes to create each string
+	for num in range(nodes):
+
+		# get the chunk size
+		chunk = (len(data)/nodes) + 1
+
+		# if that many bytes our not possible do till end
+		if((num + 1) * chunk < len(data)):
+			temp_string = data[int(num * chunk): int((num + 1) * chunk)]
+		else:
+			temp_string = data[int(num * chunk):]
+
+		# appending to the array
+		outputArray.append(temp_string)
+
+	# array of length, nodes
+	return outputArray
+
+# 
+# Returns a byte string from a split up array
+# data_array => ByteString Array
+# eg retrieveData(["ac", "bd"]) = "abcd" 
+#
+def retrieveData(data_array):
+
+	# declaring the output bytestring
+	outputData = "".encode()
+
+	# going though the array one by one
+	for data in data_array:
+
+		# append each part
+		outputData += data
+
+	# byte string with all the data
+	return outputData
