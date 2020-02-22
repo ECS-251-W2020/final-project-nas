@@ -132,7 +132,7 @@ def get_request(c, ip):
     elif (requestType == "update_ledger"):
         update_ledger(c, filename, ip)
 
-    elif (requestType == "lock")
+    elif (requestType == "lock"):
         lock_server(c, ip)
 
 #

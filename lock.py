@@ -39,7 +39,7 @@ def release():
 #
 # Check if the ip is the current lock holder
 #
-def check_lock(ip)
+def check_lock(ip):
     global serverLock
     if ip == serverLock:
         return True
