@@ -115,7 +115,7 @@ class WidgetGallery(QDialog):
     #function for calling another python script
     
     def call_client(self):
-        subprocess.call("python3 1.py",shell=True)
+        subprocess.call("python3 client.py",shell=True)
         
    #function for creating top right box(submit and quit buttons)
     def createTopRightGroupBox(self):
