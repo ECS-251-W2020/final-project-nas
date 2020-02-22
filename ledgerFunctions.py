@@ -54,6 +54,35 @@ def add_node(ip):
 	with open(LEDGER_PATH, "w") as outfile: 
 		outfile.write(ledger_object)
 
+#
+# Function to add a file to the ledger file
+#
+def add_file(filename, ownerIP):
+
+	# checks if ledger file exists
+	if (path.exists(LEDGER_PATH) == False):
+		return False
+
+	# read the ledger file into a dictionary
+	with open(LEDGER_PATH) as f:
+		ledger = json.load(f)
+
+	# create a new id for the user
+	newID = get_new_id(ledger["Files"])
+
+	# new node variable
+	file = { "Filename" : filename, "Owner IP" : ownerIP, "Shards" : get_ips()}
+
+	# add it to the ledger
+	ledger["Files"].append(file)
+
+	# Serializing json  
+	ledger_object = json.dumps(ledger, indent = 4) 
+
+	# Writing to sample.json 
+	with open(LEDGER_PATH, "w") as outfile: 
+		outfile.write(ledger_object)
+
 
 #
 # Function to get the list of ips from the ledger

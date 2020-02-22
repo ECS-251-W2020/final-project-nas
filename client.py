@@ -6,6 +6,7 @@ import ledgerFunctions as ledger
 
 BYTES_TO_SEND = 1024
 REQUEST_MAX_LENGTH = 100
+
 #
 # Creates a socket that has a connection with the specied host and port
 #
@@ -21,9 +22,51 @@ def run_client(host, port=12345):
     return s
 
 #
+# Lock all servers
+#
+def lock_servers():
+
+    # logging
+    print("Locking All Servers")
+
+    # go through the ips and lock them
+    for ip in ledger.get_ips():
+
+        # connect to the host you want to send file to
+        s = run_client(ip)
+
+        # create a push request for the server and encode it to bytes
+        cmd = helper.pad_string("lock " + helper.find_ip())
+        s.send(cmd.encode())
+
+        # recieve response from server
+        recv = s.recv(REQUEST_MAX_LENGTH).decode()
+
+        # if error then stop
+        if(recv.split()[0] == "Error"):
+
+            # return false
+            print(recv)
+            return False
+
+    # logging that we beginning to write 
+    print("Began writing to all the files")
+    print("******************************")
+    print("******************************")
+
+    # if everything goes smoothly
+    return True
+
+
+
+#
 # Function to send out bytes of data from filename
 #
 def send_file(filename):
+
+    # going to start locking all servers for a send file
+    if(lockServers() == False):
+        return
 
     # opening a file in binary
     f = open(filename, 'rb')
@@ -58,13 +101,15 @@ def send_file(filename):
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
-        print(recv)
 
         # check if the servor responded with an error
-        if(recv.split(' ', 1)[0] != "Error"):
+        if(recv.split()[0] != "Error"):
 
             # get the string we want to send
             toSend = byteArray[index]
+
+            # logging
+            print("Starting to send", len(toSend),"bytes to", ip)
 
             # get the range of things to send at a time
             for i in range(0, len(toSend), BYTES_TO_SEND):
@@ -78,11 +123,24 @@ def send_file(filename):
                 # send the bytes
                 s.send(byte)
 
+            # logging
+            print("Finished sending file")
+            print("******************************")
+
         # server did respond with error
         else:
             print("Something went wrong")
 
         s.close()
+
+    # logging end of command
+    print("******************************")
+
+    # updating the ledger locally
+    ledger.add_file()
+
+    # sending the update ledger command to everyone
+    update_ledger()
 
 
 #
@@ -129,7 +187,10 @@ def receive_file(s, filename):
 # Gets a copy of the current ledger from a known host, adds itself,
 # and broadcasts to all servers
 #
-def pull_ledger(s):
+def pull_ledger(ip):
+
+    # connect to the ip
+    run_client(ip)
 
     # create a new node request for the server and encode it to bytes
     cmd = helper.pad_string("pull_ledger ledger.json")
@@ -164,6 +225,8 @@ def pull_ledger(s):
     # Server responded with an error
     else:
         print("Something went wrong while getting the ledger.")
+        s.close()
+        return
 
     s.close()
 
@@ -173,10 +236,24 @@ def pull_ledger(s):
     # Send updated ledger to all serversin the network
     update_ledger()
 
+
+#
+# Sends a request to server for updating the ledger
+#
 def update_ledger():
+
+    # logging
+    print("Beginning to send updated ledger to all servers")
+
+    # going through all the ips
     for ip in ledger.get_ips():
+
+        # as long as is it is not our own ip
         if ip != helper.find_ip():
+
+            # run the client
             s = run_client(ip)
+
             # create a push request for the server and encode it to bytes
             cmd = helper.pad_string("update_ledger ledger.json")
             s.send(cmd.encode())
@@ -210,19 +287,21 @@ def update_ledger():
             # server did respond with error
             else:
                 print("Something went wrong while updating the ledger to", s.gethostname())
+
+    print("Finished sending the ledger to everyone")
+    print("******************************")
+    print("******************************")
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
 #
 def main():
-    #s = run_client("10.0.0.160", 12345)
-    s = run_client("172.20.10.3", 12345)
 
     if(sys.argv[1] == "push"):
         send_file(sys.argv[2])
     if(sys.argv[1] == "pull"):
-        receive_file(s, sys.argv[2])
+        receive_file(sys.argv[2])
     if(sys.argv[1] == "pull_ledger"):
-        pull_ledger(s)
+        pull_ledger(sys.argv[2])
     if(sys.argv[1] == "update_ledger"):
         update_ledger()
 
