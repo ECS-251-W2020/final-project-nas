@@ -4,8 +4,9 @@ import signal
 import sys
 import os
 import time
-from helperFunctions import pad_string, find_ip
+import helperFunctions as helper
 import ledgerFunctions as ledger
+import lock
 
 import threading
 from _thread import *
@@ -14,9 +15,6 @@ from _thread import *
 BYTES_TO_SEND = 1024
 CLIENTS_ALLOWED = 5
 REQUEST_MAX_LENGTH = 100
-
-# Write lock that stores the IP address of the client that is performing a write
-serverLock = ""
 
 # global socket declaration
 s = socket.socket()
@@ -95,14 +93,14 @@ def check_request(request):
 # Send error to client
 #
 def send_error(c, errorMessage):
-    error = pad_string(errorMessage)
+    error = helper.pad_string(errorMessage)
     c.send(error.encode())
     print(error)
 
 #
 # Function to recieve requests from the client
 #
-def get_request(c, addr):
+def get_request(c, ip):
 
     # read the request from the client
     request = c.recv(REQUEST_MAX_LENGTH).decode()
@@ -112,6 +110,9 @@ def get_request(c, addr):
         send_error(c, "Error 100: Invalid request format from client")
         return
 
+    if lock.locked() and not lock.checkLock():
+        send_error(c, "Error 123: Server currently busy")
+
     # get type and filename from request
     [requestType, filename] = str(request).lower().split()
 
@@ -120,26 +121,34 @@ def get_request(c, addr):
         send_file(c, filename)
 
     # recieve request
-    elif (requestType == "push" and serverLock == ""):
-            receive_file(c, filename, addr)
+    elif (requestType == "push"):
+        receive_file(c, filename, addr)
 
-        # send a copy of the ledger to the client
-    elif (requestType == "pull_ledger" and serverLock == ""):
-            send_ledger(c, addr)
+    # send a copy of the ledger to the client
+    elif (requestType == "pull_ledger"):
+        send_ledger(c, addr)
 
-        # send a copy of the ledger to the client
-    elif (requestType == "update_ledger" and serverLock == ""):
-            update_ledger(c, filename, addr)
+    # send a copy of the ledger to the client
+    elif (requestType == "update_ledger"):
+        update_ledger(c, filename, ip)
 
+    elif (requestType == "lock")
+        lock_server(c, ip)
+
+#
+# Lock a server to prevent multiple writes from occuring at the same time
+#
+def lock_server(c, ip):
+    if lock.unlocked():
+        lock.acquire(ip)
+        c.send(helper.pad_string("Server locked").encode())
     else:
-        send_error(c, "Error 123: Server currently performing write or updating ledger from %s. Try again some other time." % (str(addr)))
+        send_error("Error 124: Server already locked")
 
 #
 # Function to update the ledger with the new stuff to the client
 #
-def update_ledger(c, filename, addr):
-
-    serverLock = addr
+def update_ledger(c, filename, ip):
 
     # start with the time
     start = time.time()
@@ -149,7 +158,7 @@ def update_ledger(c, filename, addr):
     byte = 0
 
     # send confirmation
-    c.send(pad_string("Server is ready to update its ledger").encode())
+    c.send(helper.pad_string("Server is ready to update its ledger").encode())
 
     while True:
 
@@ -170,13 +179,15 @@ def update_ledger(c, filename, addr):
     print("Finished running download of file %s in %.2f seconds" % (filename, float(end - start)))
     print(byte, "bytes sent")
 
-    serverLock = ""
+    # Release the lock if one is present
+    if lock.locked() and lock.check_lock(ip):
+            lock.release()
 
 #
 # Function to send the ledger to the new client
 #
 def send_ledger(c, addr):
-    serverLock = addr
+
     start = time.time()
 
     # open the ledger if it exists
@@ -189,7 +200,7 @@ def send_ledger(c, addr):
         return
 
     # send confirmation
-    c.send(pad_string("Server is ready to send ledger").encode())
+    c.send(helper.pad_string("Server is ready to send ledger").encode())
 
     # read bytes and set up counter
     l = f.read(BYTES_TO_SEND)
@@ -212,7 +223,6 @@ def send_ledger(c, addr):
 
     # close the connection with the client
     c.close()
-    serverLock = ""
 
 #
 # Function to send out bytes of data from filename
@@ -231,7 +241,7 @@ def send_file(c, filename):
         return
 
     # send confirmation
-    c.send(pad_string("Server is ready to send file").encode())
+    c.send(helper.pad_string("Server is ready to send file").encode())
 
     # read bytes and set up counter
     l = f.read(BYTES_TO_SEND)
@@ -260,7 +270,6 @@ def send_file(c, filename):
 #
 def receive_file(c, filename, addr):
 
-    serverLock = addr
     start = time.time()
 
     # open a temporary file to store the received bytes
@@ -273,7 +282,7 @@ def receive_file(c, filename, addr):
     byte = 0
 
     # send confirmation
-    c.send(pad_string("Server is ready to recieve file").encode())
+    c.send(helper.pad_string("Server is ready to recieve file").encode())
 
     while True:
 
@@ -294,7 +303,6 @@ def receive_file(c, filename, addr):
     print("Finished running download of file %s in %.2f seconds" % (filename, float(end - start)))
     print(byte, "bytes sent")
 
-    serverLock = ""
 
 try:
     # calls the main function to run the server
