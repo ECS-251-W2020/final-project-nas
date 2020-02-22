@@ -14,9 +14,9 @@ def run_client(host, port=12345):
 
     #creates a new socket
     s = socket.socket()
+
     #connect the socket to the given host
     s.connect((host, port))
-    print("Connected to host", host)
 
     #return the socket once created
     return s
@@ -65,7 +65,7 @@ def lock_servers():
 def send_file(filename):
 
     # going to start locking all servers for a send file
-    if(lockServers() == False):
+    if(lock_servers() == False):
         return
 
     # opening a file in binary
@@ -137,7 +137,7 @@ def send_file(filename):
     print("******************************")
 
     # updating the ledger locally
-    ledger.add_file()
+    ledger.add_file(filename, helper.find_ip())
 
     # sending the update ledger command to everyone
     update_ledger()
@@ -146,7 +146,9 @@ def send_file(filename):
 #
 # Receives a file
 #
-def receive_file(s, filename):
+def receive_file(filename):
+
+    # connect to the host
 
     # create a pull request for the server and encode it to bytes
     cmd = helper.pad_string("pull " + filename)
@@ -190,7 +192,7 @@ def receive_file(s, filename):
 def pull_ledger(ip):
 
     # connect to the ip
-    run_client(ip)
+    s = run_client(ip)
 
     # create a new node request for the server and encode it to bytes
     cmd = helper.pad_string("pull_ledger ledger.json")
@@ -243,6 +245,8 @@ def pull_ledger(ip):
 def update_ledger():
 
     # logging
+    print("******************************")
+    print("******************************")
     print("Beginning to send updated ledger to all servers")
 
     # going through all the ips
