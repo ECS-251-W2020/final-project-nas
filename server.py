@@ -70,7 +70,8 @@ def run_server():
         connectionLock.acquire()
 
         # recieve request and call relevant function
-        start_new_thread(get_request, (c,addr))
+        ip = str(addr[0])
+        start_new_thread(get_request, (c,ip))
 
         # terminal output
         print("*************************************")
@@ -125,19 +126,19 @@ def get_request(c, addr):
         send_file(c, filename)
 
     # recieve request
-    elif (requestType == "push" and serverLock != ""):
-        receive_file(c, filename, addr)
+    elif (requestType == "push" and serverLock == ""):
+            receive_file(c, filename, addr)
 
-    # send a copy of the ledger to the client
-    elif (requestType == "pull_ledger" and serverLock != ""):
-        send_ledger(c, addr)
+        # send a copy of the ledger to the client
+    elif (requestType == "pull_ledger" and serverLock == ""):
+            send_ledger(c, addr)
 
-    # send a copy of the ledger to the client
-    elif (requestType == "update_ledger" and serverLock != ""):
-        update_ledger(c, filename, addr)
+        # send a copy of the ledger to the client
+    elif (requestType == "update_ledger" and serverLock == ""):
+            update_ledger(c, filename, addr)
 
     else:
-        send_error(c, "Error 123: Server currently performing write or updating ledger from %s. Try again some other time." % (addr))
+        send_error(c, "Error 123: Server currently performing write or updating ledger from %s. Try again some other time." % (str(addr)))
 
 #
 # Function to update the ledger with the new stuff to the client
@@ -285,7 +286,7 @@ def receive_file(c, filename, addr):
     except:
         os.system("mkdir fico")
         file = open("fico/" + filename, 'wb')
-    
+
     byte = 0
 
     # send confirmation
