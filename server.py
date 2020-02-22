@@ -82,7 +82,7 @@ def check_request(request):
     # have to have at most two strings separated
     if (len(request.split()) != 2):
         return False
-        
+
     # have only pull or push request
     if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger", "lock"]):
         return False
@@ -110,7 +110,7 @@ def get_request(c, ip):
         send_error(c, "Error 100: Invalid request format from client")
         return
 
-    if lock.locked() and not lock.check_lock():
+    if lock.locked() and not lock.check_lock(ip):
         send_error(c, "Error 123: Server currently busy")
 
     # get type and filename from request
