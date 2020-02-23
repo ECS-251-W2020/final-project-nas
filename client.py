@@ -83,11 +83,15 @@ def send_file(filename):
         # check if the ip is same as our ip
         if(ip == helper.find_ip()):
 
-            # open a file to write
-            f = open("fico/" + filename + str(index), "wb")
+            # open a temporary file to store the received bytes
+            try:
+                file = open("fico/" + filename, 'wb')
+            except:
+                os.system("mkdir fico")
+                file = open("fico/" + filename, 'wb')
 
             # write to it
-            f.write(byteArray[index])
+            file.write(byteArray[index])
 
             # move forward in the for loop
             continue
