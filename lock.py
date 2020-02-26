@@ -51,4 +51,4 @@ def check_lock(ip):
 #
 def return_lock():
     global serverLock
-    return
+    return serverLock

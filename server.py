@@ -15,8 +15,10 @@ from _thread import *
 # SERVER ERRORS
 # 100 - Invaalid client request
 # 102 - File doesnt exist on server
-# 123 - Server locked
+# 123 - Lock failure, server currently locked and cannot perform write/update
 # 124 - Lock failure, server already locked by another client
+# 125 - Lock failure, server not locked before write
+# 126 - Lock failure, server not locked before ledger update
 #
 
 # macro for min bytes
@@ -156,6 +158,14 @@ def lock_server(c, ip):
 #
 def update_ledger(c, filename, ip):
 
+    if lock.locked() and not lock.check_lock(ip):
+        send_error(c, "Error 123: Server currently busy")
+        return
+
+    if lock.unlocked():
+        send_error(c, "Error 125: Server needs to be locked before write")
+        return
+
     # start with the time
     start = time.time()
 
@@ -187,7 +197,8 @@ def update_ledger(c, filename, ip):
 
     # Release the lock if one is present
     if lock.locked() and lock.check_lock(ip):
-            lock.release()
+        print("Server lock released by ", return_lock())
+        lock.release()
 
 #
 # Function to send the ledger to the new client
@@ -278,6 +289,10 @@ def receive_file(c, filename, ip):
 
     if lock.locked() and not lock.check_lock(ip):
         send_error(c, "Error 123: Server currently busy")
+        return
+
+    if lock.unlocked():
+        send_error(c, "Error 125: Server needs to be locked before write")
         return
 
     start = time.time()
