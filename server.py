@@ -11,6 +11,14 @@ import lock
 import threading
 from _thread import *
 
+#
+# SERVER ERRORS
+# 100 - Invaalid client request
+# 102 - File doesnt exist on server
+# 123 - Server locked
+# 124 - Lock failure, server already locked by another client
+#
+
 # macro for min bytes
 BYTES_TO_SEND = 1024
 CLIENTS_ALLOWED = 5
@@ -109,9 +117,6 @@ def get_request(c, ip):
     if (check_request(request) == False):
         send_error(c, "Error 100: Invalid request format from client")
         return
-
-    if lock.locked() and not lock.check_lock(ip):
-        send_error(c, "Error 123: Server currently busy")
 
     # get type and filename from request
     [requestType, filename] = str(request).lower().split()
@@ -236,7 +241,7 @@ def send_file(c, filename):
     try:
         f = open("directory/" + filename, 'rb')
     except:
-        send_error(c, "Error 176: File doesn't exist on server machine")
+        send_error(c, "Error 102: File doesn't exist on server machine")
 
         c.close()
         return
@@ -270,6 +275,10 @@ def send_file(c, filename):
 # Receives a file
 #
 def receive_file(c, filename, ip):
+
+    if lock.locked() and not lock.check_lock(ip):
+        send_error(c, "Error 123: Server currently busy")
+        return
 
     start = time.time()
 
