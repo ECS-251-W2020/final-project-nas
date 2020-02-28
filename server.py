@@ -162,10 +162,6 @@ def update_ledger(c, filename, ip):
         send_error(c, "Error 123: Server currently busy")
         return
 
-    if lock.unlocked():
-        send_error(c, "Error 125: Server needs to be locked before write")
-        return
-
     # start with the time
     start = time.time()
 
