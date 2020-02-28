@@ -49,11 +49,6 @@ def lock_servers():
             print(recv)
             return False
 
-    # logging that we beginning to write 
-    print("Began writing to all the files")
-    print("******************************")
-    print("******************************")
-
     # if everything goes smoothly
     return True
 
@@ -67,6 +62,10 @@ def send_file(filename):
     # going to start locking all servers for a send file
     if(lock_servers() == False):
         return
+
+    print("Began writing to all nodes in the network")
+    print("******************************")
+    print("******************************")
 
     # opening a file in binary
     f = open(filename, 'rb')
@@ -97,7 +96,7 @@ def send_file(filename):
             continue
 
         # connect to the host you want to send file to
-        s = run_client(ip, 12345)
+        s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
         cmd = helper.pad_string("push " + filename + str(index))
@@ -152,42 +151,68 @@ def send_file(filename):
 #
 def receive_file(filename):
 
-    # connect to the host
+    # check if the client is the owner of the file
+    if not ledger.check_owner(filename, helper.find_ip()):
+        print("File not owned by this client")
+        return
 
-    # create a pull request for the server and encode it to bytes
-    cmd = helper.pad_string("pull " + filename)
-    s.send(cmd.encode())
+    # create the downloaded directory if it doesnt exist, and open a file to write in
+    try:
+        file = open("dir/" + filename, 'wb')
+    except:
+        os.system("mkdir dir")
+        file = open("dir/" + filename, 'wb')
 
-    # recieve confirmation response from server
-    receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
-    print(receivedMessage)
+    # going through the list of ips and making the request
+    for index, ip in enumerate(ledger.get_ips()):
 
-    # check if the servor responded with an error
-    if(receivedMessage.split(' ', 1)[0] != "Error"):
+        # check if the current ip in the ledger is the clients
+        if(ip == helper.find_ip()):
 
-        print("Downloading file")
-        #open a temporary file to store the received bytes
-        file = open(filename, 'wb')
-        start = time.time()
+            # get the shard name for the file that is stored on the clients computer
+            shard = ledger.get_shard(filename, ip)
 
-        while True:
+            # open the shard to combine it with the rest of the file
+            tempFile = open("dir/" + shard, 'wb')
 
-            #receive 1024 bytes at a time and write them to a file
-            bytes = s.recv(1024)
-            file.write(bytes)
+            # copy the contents of the shard to the new file
+            file.write(tempFile.read())
 
-            #break infinite loop once all bytes are transferred
-            if not bytes:
-                break
 
-        #close the file once transfer is complete
-        file.close()
-        end = time.time()
-        print("Finished running download of file in %.2f seconds" %  float(end - start))
+        # connect to the host you want to receive files from
+        s = run_client(ip)
 
-    # Server responded with an error
-    else:
-        print("Something went wrong.")
+        # gets the shard filename as stored on the host computer
+        shard = ledger.get_shard(filename, ip)
+
+        # create a pull request for the server and encode it to bytes
+        cmd = helper.pad_string("pull " + shard)
+        s.send(cmd.encode())
+
+        # recieve confirmation response from server
+        receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
+
+        # check if the servor responded with an error
+        if(receivedMessage.split()[0] != "Error"):
+
+            print("Receiving shard from", ip)
+
+            while True:
+
+                #receive 1024 bytes at a time and write them to a file
+                bytes = s.recv(1024)
+                file.write(bytes)
+
+                #break infinite loop once all bytes are transferred
+                if not bytes:
+                    break
+
+            #close the file once transfer is complete
+            file.close()
+
+        # Server responded with an error
+        else:
+            print("Something went wrong while receiving the file.")
 
 #
 # Gets a copy of the current ledger from a known host, adds itself,
