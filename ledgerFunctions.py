@@ -19,7 +19,7 @@ def add_node(ip):
 		ledger = json.load(f)
 
 	# new node variable
-	node = { "ID" : newID, "IP" : ip }
+	node = {"IP" : ip }
 
 	# add it to the ledger
 	ledger["Nodes"].append(node)

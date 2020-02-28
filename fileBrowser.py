@@ -2,6 +2,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
 import os
+import sys
 
 from ui import main
 
@@ -55,7 +56,20 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
+        btn = QtWidgets.QPushButton('Add File', self)
+        btn.resize(90,30)
+        btn.clicked.connect(self.file_picker)
+        btn.move(680, 510)  
         self.populate()
+
+    # Function to pick files from the browser
+    def file_picker(self):
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
+                                                       'Single File',
+                                                       "~/",
+                                                      '*')
+        print('filePath',filePath, '\n')
+        
 
     # Populate using 
     def populate(self):
@@ -64,17 +78,22 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model.setRootPath((QtCore.QDir.rootPath()))
         print(self.model)
         self.treeView.setModel(self.model)
+        self.treeView.setColumnWidth(0, 300)
         self.treeView.setRootIndex(self.model.index(path))
         self.treeView.setSortingEnabled(True)
 
     def context_menu(self):
         menu = QtWidgets.QMenu()
-        open = menu.addAction("Open file")
-        open.triggered.connect(self.open_file)
-        open = menu.addAction("Push Changes")
-        open.triggered.connect(self.open_file)
+        
+        # open.triggered.connect(self.open_file)
+        # open = menu.addAction("Push Changes")
+        # open.triggered.connect(self.open_file)
         filename = self.model.fileName(self.treeView.currentIndex())
-        filename = "hi.txt"
+        filetype = self.model.type(self.treeView.currentIndex()).split(" ")[0]
+        if filetype[-1].isdigit() == True:
+            open = menu.addAction("Read File")
+        else:
+            open = menu.addAction("Open file")
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
