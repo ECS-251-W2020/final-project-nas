@@ -179,6 +179,9 @@ def receive_file(filename):
             # copy the contents of the shard to the new file
             file.write(tempFile.read())
 
+            # continue iterating through the loop
+            continue
+
 
         # connect to the host you want to receive files from
         s = run_client(ip)
