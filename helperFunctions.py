@@ -1,4 +1,9 @@
+import os
 import socket
+import shutil
+
+from ledgerFunctions import LEDGER_PATH
+
 REQUEST_MAX_LENGTH = 100
 
 #
@@ -19,8 +24,8 @@ def find_ip():
     return ip;
 
 
-# 
-# Returns an array of split up byte strings into 
+#
+# Returns an array of split up byte strings into
 # data => ByteString
 # nodes => Int
 # eg splitData("abcd", 2) = ["ac", "bd"]
@@ -48,10 +53,10 @@ def splitData(data, nodes):
 	# array of length, nodes
 	return outputArray
 
-# 
+#
 # Returns a byte string from a split up array
 # data_array => ByteString Array
-# eg retrieveData(["ac", "bd"]) = "abcd" 
+# eg retrieveData(["ac", "bd"]) = "abcd"
 #
 def retrieveData(data_array):
 
@@ -66,3 +71,16 @@ def retrieveData(data_array):
 
 	# byte string with all the data
 	return outputData
+
+def clean_directory():
+    # remove trailing files from previous network usage
+    if os.path.isfile(LEDGER_PATH):
+        os.remove(LEDGER_PATH)
+    if os.path.isdir("directory"):
+        shutil.rmtree("directory")
+    if os.path.isdir("fico"):
+        shutil.rmtree("fico")
+
+    # add fresh directories for the new network to run on
+    os.mkdir("directory")
+    os.mkdir("fico")

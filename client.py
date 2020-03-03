@@ -2,6 +2,7 @@ import socket
 import sys
 import os
 import time
+import shutil
 import helperFunctions as helper
 import ledgerFunctions as ledger
 
@@ -229,6 +230,8 @@ def pull_ledger(ip):
     # connect to the ip
     s = run_client(ip)
 
+    helper.clean_directory()
+
     # create a new node request for the server and encode it to bytes
     cmd = helper.pad_string("pull_ledger ledger.json")
     s.send(cmd.encode())
@@ -327,6 +330,22 @@ def update_ledger():
     print("Finished sending the ledger to everyone")
     print("******************************")
     print("******************************")
+
+#
+# Creates a new network with the IP of the client as the first node
+#
+def start_network():
+
+    # create a private key on the local host and its public key for the ledger
+    #pubkey = create_keys()
+    pubkey = "THIS IS MY KEY"
+
+    # clean the directory for a fresh network
+    helper.clean_directory()
+
+    # create the first node in the ledger
+    ledger.add_first_node(helper.find_ip(), pubkey)
+
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
 #
@@ -340,6 +359,8 @@ def main():
         pull_ledger(sys.argv[2])
     if(sys.argv[1] == "update_ledger"):
         update_ledger()
+    if(sys.argv[1] == "start_network"):
+        start_network()
 
     # s.close()
 

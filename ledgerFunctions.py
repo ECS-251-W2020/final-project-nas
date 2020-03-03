@@ -8,7 +8,7 @@ LEDGER_PATH = "ledger.json"
 #
 # Function to add a node to the ledger file
 #
-def add_node(ip):
+def add_node(ip, pubKey):
 
 	# checks if ledger file exists
 	if (path.exists(LEDGER_PATH) == False):
@@ -19,7 +19,7 @@ def add_node(ip):
 		ledger = json.load(f)
 
 	# new node variable
-	node = {"IP" : ip }
+	node = {"IP" : ip, "Key" : pubKey}
 
 	# add it to the ledger
 	ledger["Nodes"].append(node)
@@ -30,6 +30,31 @@ def add_node(ip):
 	# Writing to sample.json
 	with open(LEDGER_PATH, "w") as outfile:
 		outfile.write(ledger_object)
+
+#
+# Function to add a node to the ledger file
+#
+def add_first_node(ip, pubKey):
+
+	# read the ledger file into a dictionary
+	ledger = {}
+
+	# new node variable
+	node = {"IP" : ip, "Key" : pubKey}
+
+	# add it to the ledger
+	ledger["Nodes"] = [node]
+
+	# add en empty files list to the ledger
+	ledger["Files"] = []
+
+	# Serializing json
+	ledger_object = json.dumps(ledger, indent = 4)
+
+	# Writing to sample.json
+	with open(LEDGER_PATH, "w") as outfile:
+		outfile.write(ledger_object)
+
 
 #
 # Function to add a file to the ledger file
