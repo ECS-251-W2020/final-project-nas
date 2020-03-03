@@ -70,7 +70,7 @@ def get_shard(filename, IP):
 	with open(LEDGER_PATH) as f:
 		ledger = json.load(f)
 
-	return "filename" + get_ips().index(IP)
+	return filename + str(get_ips().index(IP))
 
 
 #
@@ -87,8 +87,9 @@ def check_owner(filename, IP):
 		ledger = json.load(f)
 
 	# check if client is the atual owner of the file
-	if ledger["Files"]["Owner IP"] == IP:
-		return True
+	for file in ledger["Files"]:
+		if file["Filename"] == filename and file["Owner IP"] == IP:
+			return True
 
 	return False
 

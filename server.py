@@ -158,6 +158,13 @@ def lock_server(c, ip):
 #
 def update_ledger(c, filename, ip):
 
+    if(ip == helper.find_ip()):
+        print("Same server as client")
+        c.send(helper.pad_string("Server doesnt need your ledger").encode())
+        if lock.locked():
+            lock.release()
+        return
+
     if lock.locked() and not lock.check_lock(ip):
         send_error(c, "Error 123: Server currently busy")
         return

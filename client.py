@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 import time
 import helperFunctions as helper
 import ledgerFunctions as ledger
@@ -84,10 +85,10 @@ def send_file(filename):
 
             # open a temporary file to store the received bytes
             try:
-                file = open("fico/" + filename, 'wb')
+                file = open("directory/" + filename + str(index), 'wb')
             except:
-                os.system("mkdir fico")
-                file = open("fico/" + filename, 'wb')
+                os.system("mkdir directory")
+                file = open("directory/" + filename + str(index), 'wb')
 
             # write to it
             file.write(byteArray[index])
@@ -158,10 +159,10 @@ def receive_file(filename):
 
     # create the downloaded directory if it doesnt exist, and open a file to write in
     try:
-        file = open("dir/" + filename, 'wb')
+        file = open("directory/" + filename, 'wb')
     except:
-        os.system("mkdir dir")
-        file = open("dir/" + filename, 'wb')
+        os.system("mkdir directory")
+        file = open("directory/" + filename, 'wb')
 
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
@@ -173,7 +174,7 @@ def receive_file(filename):
             shard = ledger.get_shard(filename, ip)
 
             # open the shard to combine it with the rest of the file
-            tempFile = open("dir/" + shard, 'wb')
+            tempFile = open("directory/" + shard, 'rb')
 
             # copy the contents of the shard to the new file
             file.write(tempFile.read())
@@ -184,6 +185,7 @@ def receive_file(filename):
 
         # gets the shard filename as stored on the host computer
         shard = ledger.get_shard(filename, ip)
+        print(shard)
 
         # create a pull request for the server and encode it to bytes
         cmd = helper.pad_string("pull " + shard)
@@ -207,12 +209,13 @@ def receive_file(filename):
                 if not bytes:
                     break
 
-            #close the file once transfer is complete
-            file.close()
-
-        # Server responded with an error
+            # Server responded with an error
         else:
             print("Something went wrong while receiving the file.")
+
+        #close the file once transfer is complete
+    file.close()
+
 
 #
 # Gets a copy of the current ledger from a known host, adds itself,
@@ -281,45 +284,42 @@ def update_ledger():
     # going through all the ips
     for ip in ledger.get_ips():
 
-        # as long as is it is not our own ip
-        if ip != helper.find_ip():
+        # run the client
+        s = run_client(ip)
 
-            # run the client
-            s = run_client(ip)
+        # create a push request for the server and encode it to bytes
+        cmd = helper.pad_string("update_ledger ledger.json")
+        s.send(cmd.encode())
 
-            # create a push request for the server and encode it to bytes
-            cmd = helper.pad_string("update_ledger ledger.json")
-            s.send(cmd.encode())
+        # recieve response from server
+        recv = s.recv(REQUEST_MAX_LENGTH).decode()
+        print(recv)
 
-            # recieve response from server
-            recv = s.recv(REQUEST_MAX_LENGTH).decode()
-            print(recv)
+        # check if the servor responded with an error
+        if(recv.split(' ', 1)[0] != "Error"):
 
-            # check if the servor responded with an error
-            if(recv.split(' ', 1)[0] != "Error"):
+            # opening a file
+            f = open(ledger.LEDGER_PATH, 'rb')
 
-                # opening a file
-                f = open(ledger.LEDGER_PATH, 'rb')
+            # read bytes and set up counter
+            l = f.read(BYTES_TO_SEND)
+            byte = BYTES_TO_SEND
 
-                # read bytes and set up counter
+            # a forever loop untill file gets sent
+            while (l):
+
+                # send the bytes
+                s.send(l)
+
+                # read more bytes and incrementing counter
                 l = f.read(BYTES_TO_SEND)
-                byte = BYTES_TO_SEND
+                byte += BYTES_TO_SEND
 
-                # a forever loop untill file gets sent
-                while (l):
+            print(byte, "bytes sent")
 
-                    # send the bytes
-                    s.send(l)
-
-                    # read more bytes and incrementing counter
-                    l = f.read(BYTES_TO_SEND)
-                    byte += BYTES_TO_SEND
-
-                print(byte, "bytes sent")
-
-            # server did respond with error
-            else:
-                print("Something went wrong while updating the ledger to", s.gethostname())
+        # server did respond with error
+        else:
+            print("Something went wrong while updating the ledger to", s.gethostname())
 
     print("Finished sending the ledger to everyone")
     print("******************************")
