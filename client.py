@@ -266,6 +266,18 @@ def pull_ledger(ip):
         s.close()
         return
 
+    # remove trailing files from previous network usage
+    if os.path.isfile(ledger.LEDGER_PATH):
+        os.remove(ledger.LEDGER_PATH)
+    if os.path.isdir("directory"):
+        shutil.rmtree("directory")
+    if os.path.isdir("fico"):
+        shutil.rmtree("fico")
+
+    # add fresh directories for the new network to run on
+    os.mkdir("directory")
+    os.mkdir("fico")
+
     s.close()
 
     # Update ledger with ip of client
@@ -335,15 +347,23 @@ def update_ledger():
 def start_network():
 
     # create a private key on the local host and its public key for the ledger
-    pubkey = creae_keys()
+    #pubkey = create_keys()
+    pubkey = "THIS IS MY KEY"
 
     # create the first node in the ledger
     ledger.add_first_node(helper.find_ip(), pubkey)
 
     # remove trailing files from previous network usage
-    os.remove("ledger.json")
-    shutil.rmtree("directory/")
-    shutil.rmtree("fico/")
+    if os.path.isfile("ledger.json"):
+        os.remove("ledger.json")
+    if os.path.isdir("directory"):
+        shutil.rmtree("directory")
+    if os.path.isdir("fico"):
+        shutil.rmtree("fico")
+
+    # add fresh directories for the new network to run on
+    os.mkdir("directory")
+    os.mkdir("fico")
 
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
@@ -358,7 +378,7 @@ def main():
         pull_ledger(sys.argv[2])
     if(sys.argv[1] == "update_ledger"):
         update_ledger()
-    if(sys.argv[1] == "start_network")
+    if(sys.argv[1] == "start_network"):
         start_network()
 
     # s.close()
