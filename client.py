@@ -2,6 +2,7 @@ import socket
 import sys
 import os
 import time
+import shutil
 import helperFunctions as helper
 import ledgerFunctions as ledger
 
@@ -327,6 +328,23 @@ def update_ledger():
     print("Finished sending the ledger to everyone")
     print("******************************")
     print("******************************")
+
+#
+# Creates a new network with the IP of the client as the first node
+#
+def start_network():
+
+    # create a private key on the local host and its public key for the ledger
+    pubkey = creae_keys()
+
+    # create the first node in the ledger
+    ledger.add_first_node(helper.find_ip(), pubkey)
+
+    # remove trailing files from previous network usage
+    os.remove("ledger.json")
+    shutil.rmtree("directory/")
+    shutil.rmtree("fico/")
+
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
 #
@@ -340,6 +358,8 @@ def main():
         pull_ledger(sys.argv[2])
     if(sys.argv[1] == "update_ledger"):
         update_ledger()
+    if(sys.argv[1] == "start_network")
+        start_network()
 
     # s.close()
 
