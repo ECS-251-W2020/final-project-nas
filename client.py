@@ -230,6 +230,8 @@ def pull_ledger(ip):
     # connect to the ip
     s = run_client(ip)
 
+    helper.clean_directory()
+
     # create a new node request for the server and encode it to bytes
     cmd = helper.pad_string("pull_ledger ledger.json")
     s.send(cmd.encode())
@@ -265,18 +267,6 @@ def pull_ledger(ip):
         print("Something went wrong while getting the ledger.")
         s.close()
         return
-
-    # remove trailing files from previous network usage
-    if os.path.isfile(ledger.LEDGER_PATH):
-        os.remove(ledger.LEDGER_PATH)
-    if os.path.isdir("directory"):
-        shutil.rmtree("directory")
-    if os.path.isdir("fico"):
-        shutil.rmtree("fico")
-
-    # add fresh directories for the new network to run on
-    os.mkdir("directory")
-    os.mkdir("fico")
 
     s.close()
 
@@ -350,20 +340,11 @@ def start_network():
     #pubkey = create_keys()
     pubkey = "THIS IS MY KEY"
 
+    # clean the directory for a fresh network
+    helper.clean_directory()
+
     # create the first node in the ledger
     ledger.add_first_node(helper.find_ip(), pubkey)
-
-    # remove trailing files from previous network usage
-    if os.path.isfile("ledger.json"):
-        os.remove("ledger.json")
-    if os.path.isdir("directory"):
-        shutil.rmtree("directory")
-    if os.path.isdir("fico"):
-        shutil.rmtree("fico")
-
-    # add fresh directories for the new network to run on
-    os.mkdir("directory")
-    os.mkdir("fico")
 
 #
 # Deals with creating the client node as well as providing the main command line interface for the program
