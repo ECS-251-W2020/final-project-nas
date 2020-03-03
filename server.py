@@ -158,6 +158,13 @@ def lock_server(c, ip):
 #
 def update_ledger(c, filename, ip):
 
+    if(ip == helper.find_ip()):
+        print("Same server as client")
+        c.send(helper.pad_string("Server doesnt need your ledger").encode())
+        if lock.locked():
+            lock.release()
+        return
+
     if lock.locked() and not lock.check_lock(ip):
         send_error(c, "Error 123: Server currently busy")
         return
@@ -193,7 +200,7 @@ def update_ledger(c, filename, ip):
 
     # Release the lock if one is present
     if lock.locked() and lock.check_lock(ip):
-        print("Server lock released by ", return_lock())
+        print("Server lock released by ", lock.return_lock())
         lock.release()
 
 #
@@ -246,7 +253,7 @@ def send_file(c, filename):
 
     # opening a file if possible
     try:
-        f = open("directory/" + filename, 'rb')
+        f = open("fico/" + filename, 'rb')
     except:
         send_error(c, "Error 102: File doesn't exist on server machine")
 
