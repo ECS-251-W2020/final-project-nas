@@ -50,7 +50,7 @@ def run_server():
 
     # get the current hostname and ip
     hostName = socket.gethostname()
-    hostIp = socket.gethostbyname(hostName)
+#    hostIp = socket.gethostbyname(hostName)
 
     # bind the port with the socket
     s.bind(("", port))
@@ -193,7 +193,7 @@ def update_ledger(c, filename, ip):
 
     # Release the lock if one is present
     if lock.locked() and lock.check_lock(ip):
-        print("Server lock released by ", return_lock())
+        print("Server lock released by ", lock.return_lock())
         lock.release()
 
 #
@@ -246,7 +246,7 @@ def send_file(c, filename):
 
     # opening a file if possible
     try:
-        f = open("directory/" + filename, 'rb')
+        f = open("fico/" + filename, 'rb')
     except:
         send_error(c, "Error 102: File doesn't exist on server machine")
 
