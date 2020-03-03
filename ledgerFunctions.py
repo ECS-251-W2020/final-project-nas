@@ -36,13 +36,8 @@ def add_node(ip, pubKey):
 #
 def add_first_node(ip, pubKey):
 
-	# checks if ledger file exists
-	if (path.exists(LEDGER_PATH) == False):
-		return False
-
 	# read the ledger file into a dictionary
-	with open(LEDGER_PATH) as f:
-		ledger = json.load(f)
+	ledger = {}
 
 	# new node variable
 	node = {"IP" : ip, "Key" : pubKey}
