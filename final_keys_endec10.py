@@ -23,8 +23,9 @@ def create_keys():
     #pub_key_file.close()
     print(servers_pubkey.save_pkcs1().decode('utf-8'))
     pem_pubkey = servers_pubkey.save_pkcs1().decode('utf-8')
-    my_final_public_key = rsa.PublicKey.load_pkcs1(pem_pubkey)
-    return my_final_public_key
+    #my_final_public_key = rsa.PublicKey.load_pkcs1(pem_pubkey)
+    #print(pem_pubkey)
+    return pem_pubkey
 
     
 #Encode and encrypt the command
@@ -81,9 +82,10 @@ def encrypt_using_public_key(message,public_key):
         
         #Enter the linux command and encode it in UTF-8,since RSA module operates on bytes, not strings
     encoded_message = message.encode('utf8') 
-        
+    
+    my_final_public_key = rsa.PublicKey.load_pkcs1(public_key)    
         #client encrypts its linux command using servers public key
-    encrypted_message_1 = rsa.encrypt(encoded_message, public_key)
+    encrypted_message_1 = rsa.encrypt(encoded_message, my_final_public_key)
     return encrypted_message_1
 
 #Performs decryption on an encrypted message when keys are present locally on a machine
