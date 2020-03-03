@@ -57,14 +57,14 @@ def create_keys():
 
 #Loads the key from a local file which is in PEM format and converts it into normal key format which can be used for encryption and decryption
 
-def load_private_key():
+#def load_private_key():
     #Read the private key stored in secondary memory in PEM format
-    with open('NAS_private_key.pem', mode='rb') as privatefile:
-        private_key_data = privatefile.read()
+    #with open('NAS_private_key.pem', mode='rb') as privatefile:
+    #    private_key_data = privatefile.read()
   
     #Convert the PEM format to normal private key format
-    my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
-    return my_final_private_key
+    #my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
+    #return my_final_private_key
 
 #def create_keys_and_return_public_key():
     #Read the public key stored in secondary memory in PEM format
@@ -91,9 +91,16 @@ def encrypt_using_public_key(message,public_key):
 #Performs decryption on an encrypted message when keys are present locally on a machine
 
 def decrypt_using_private_key(encrypted_message):
-        
+    
+    #Read the private key stored in secondary memory in PEM format
+    with open('NAS_private_key.pem', mode='rb') as privatefile:
+        private_key_data = privatefile.read()
+
+    #Convert the PEM format to normal private key format
+    my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
+    
         #server decrypts it using its own private key
-    message = rsa.decrypt(encrypted_message,load_private_key())
+    message = rsa.decrypt(encrypted_message,my_final_private_key)
 
         #Decoded message
     decoded_message = message.decode('utf8')
