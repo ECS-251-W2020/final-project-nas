@@ -1,9 +1,7 @@
 import rsa
 import rsa.randnum
 import subprocess
-import sys
-from Crypto.PublicKey import RSA  
-from Crypto.Util import asn1  
+import sys  
 from base64 import b64decode 
 
 class endec:
@@ -12,13 +10,12 @@ class endec:
     def create_keys(self):
 
 #Creates new keys, public and private key
-        (self.servers_pubkey, self.servers_privkey) = rsa.newkeys(512)
-        #print(self.servers_pubkey)
+        (self.servers_pubkey, self.servers_privkey) = rsa.newkeys(1024)
         #print(self.servers_privkey)
         
         # Saves private and public keys on local machine in PEM format
         priv_key_file = open('NAS_private_key.pem', 'w')
-        priv_key_file.write(self.servers_privkey.save_pkcs1().decode('utf-8'))
+        priv_key_file.write(self. servers_privkey.save_pkcs1().decode('utf-8'))
         priv_key_file.close()
         pub_key_file = open('NAS_public_key.pem', 'w')
         pub_key_file.write(self.servers_pubkey.save_pkcs1().decode('utf-8'))

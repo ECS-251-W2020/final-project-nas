@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.frame)
-        self.gridLayout_2.setObjectName("gridLayout_1")
+        self.gridLayout_2.setObjectName("gridLayout_2")
         self.treeView = QtWidgets.QTreeView(self.frame)
         self.treeView.setObjectName("treeView")
         self.gridLayout_2.addWidget(self.treeView, 0, 0, 1, 1)
