@@ -17,7 +17,7 @@ Last Week:
 	* Easy reads for the public keys from the client
 
 
-* Encryption fixes
+* Encryption fixes (S)
   * Encryption library now allows for:
     * creating and storing keys,
     * encrypting a message using a provided public key
