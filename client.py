@@ -2,9 +2,9 @@ import socket
 import sys
 import os
 import time
-import shutil
 import helperFunctions as helper
 import ledgerFunctions as ledger
+import encryption
 
 BYTES_TO_SEND = 1024
 REQUEST_MAX_LENGTH = 100
@@ -270,10 +270,13 @@ def pull_ledger(ip):
 
     s.close()
 
-    # Update ledger with ip of client
-    ledger.add_node(helper.find_ip())
+    # generate a public and private key for the host computer
+    pubkey = encryption.create_keys()
 
-    # Send updated ledger to all serversin the network
+    # update ledger with ip of client and public key
+    ledger.add_node(helper.find_ip(), pubkey)
+
+    # send updated ledger to all serversin the network
     update_ledger()
 
 
@@ -337,8 +340,7 @@ def update_ledger():
 def start_network():
 
     # create a private key on the local host and its public key for the ledger
-    #pubkey = create_keys()
-    pubkey = "THIS IS MY KEY"
+    pubkey = encryption.create_keys()
 
     # clean the directory for a fresh network
     helper.clean_directory()
@@ -353,15 +355,16 @@ def main():
 
     if(sys.argv[1] == "push"):
         send_file(sys.argv[2])
-    if(sys.argv[1] == "pull"):
+    elif(sys.argv[1] == "pull"):
         receive_file(sys.argv[2])
-    if(sys.argv[1] == "pull_ledger"):
+    elif(sys.argv[1] == "pull_ledger"):
         pull_ledger(sys.argv[2])
-    if(sys.argv[1] == "update_ledger"):
+    elif(sys.argv[1] == "update_ledger"):
         update_ledger()
-    if(sys.argv[1] == "start_network"):
+    elif(sys.argv[1] == "start_network"):
         start_network()
-
+    else:
+        print("Unrecognized command entered")
     # s.close()
 
 main()
