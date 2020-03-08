@@ -2,4 +2,5 @@ ledger.json
 __pycache__/
 directory/
 fico/
+private_key.pem
 NAS_private_key.pem
