@@ -72,6 +72,9 @@ def send_file(filename):
     # opening a file in binary
     f = open(filename, 'rb')
 
+    # get rid of the path
+    filename = filename.split("/")[-1]
+
     # getting all the data in a byte string
     byteString = f.read()
 
@@ -88,7 +91,7 @@ def send_file(filename):
             try:
                 file = open("directory/" + filename + str(index), 'wb')
             except:
-                os.system("mkdir directory")
+                os.mkdir("directory")
                 file = open("directory/" + filename + str(index), 'wb')
 
             # write to it
