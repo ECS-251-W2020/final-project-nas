@@ -234,7 +234,7 @@ def receive_file(filename):
 # Gets a copy of the current ledger from a known host, adds itself,
 # and broadcasts to all servers
 #
-def pull_ledger(ip):
+def pull_ledger(ip, serverPubkey):
 
     # connect to the ip
     s = run_client(ip)
@@ -243,7 +243,7 @@ def pull_ledger(ip):
 
     # create a new node request for the server and encode it to bytes
     cmd = "pull_ledger ledger.json"
-    encrypted_cmd = encryption.encrypt_using_public_key(cmd, ledger.get_pubkey(ip))
+    encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
     s.send(encrypted_cmd)
 
     # recieve confirmation response from server
@@ -252,10 +252,22 @@ def pull_ledger(ip):
 
     if(receivedMessage.split(' ', 1)[0] != "Error"):
 
+
+        # generate a public and private key for the host computer
+        pubkey = encryption.create_keys()
+        pubkey_split = []
+        pubkey_split.append[pubkey[0:107]]
+        pubkey_split.append[pubkey[108:-1]]
+
+        for pubkey_part in pubkey_split:
+            encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
+            s.send(encrypted_pubkey_part)
+
         print("Downloading ledger")
         #open a new ledger and store the received bytes
         file = open(ledger.LEDGER_PATH, 'wb')
         start = time.time()
+
 
         while True:
 
@@ -281,8 +293,7 @@ def pull_ledger(ip):
 
     s.close()
 
-    # generate a public and private key for the host computer
-    pubkey = encryption.create_keys()
+
 
     # update ledger with ip of client and public key
     ledger.add_node(helper.find_ip(), pubkey)
@@ -369,7 +380,7 @@ def main():
     elif(sys.argv[1] == "pull"):
         receive_file(sys.argv[2])
     elif(sys.argv[1] == "pull_ledger"):
-        pull_ledger(sys.argv[2])
+        pull_ledger(sys.argv[2],sys.argv[3])
     elif(sys.argv[1] == "update_ledger"):
         update_ledger()
     elif(sys.argv[1] == "start_network"):
