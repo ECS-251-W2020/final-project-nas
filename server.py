@@ -7,6 +7,7 @@ import time
 import helperFunctions as helper
 import ledgerFunctions as ledger
 import lock
+import encryption
 
 import threading
 from _thread import *
@@ -115,7 +116,9 @@ def get_request(c, ip):
     # read the request from the client
     encrypted_request = c.recv(REQUEST_MAX_LENGTH)
 
-    request = encryption.decrypt_using_private_key(encrypted_request)
+    request = encryption.decrypt_using_private_key(encrypted_request).decode()
+
+    print("Request :", request)
 
     # check error and send back if error
     if (check_request(request) == False):
@@ -224,12 +227,13 @@ def send_ledger(c, ip):
     # send confirmation
     c.send(helper.pad_string("Server is ready to send ledger").encode())
 
-    clientPubkey = ''
+    encryptedClientPubkey = b''
 
-    for i in range(0,1)
-        encryptedClientPubkey = c.recv(REQUEST_MAX_LENGTH)
-        clientPubkey += encryption.decrypt_using_private_key(encryptedClientPubkey).decode()
+    for i in range(2):
+        encryptedClientPubkey += c.recv(REQUEST_MAX_LENGTH)
 
+    clientPubkey = encryption.decrypt_using_private_key(encryptedClientPubkey).decode()
+    print("R :", clientPubkey)
 
     # read bytes and set up counter
     l = f.read(encryption.MESSAGE_CHUNK_LIMIT)
@@ -238,7 +242,7 @@ def send_ledger(c, ip):
     # a forever loop untill file gets sent
     while (l):
 
-        encrypted_l = encryption.encrypt_using_public_key(l, clientPubkey)
+        encrypted_l = encryption.encrypt_using_public_key(l.decode(), clientPubkey)
 
         # send the bytes
         c.send(encrypted_l)
