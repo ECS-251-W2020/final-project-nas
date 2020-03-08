@@ -24,7 +24,7 @@ from _thread import *
 # macro for min bytes
 BYTES_TO_SEND = 1024
 CLIENTS_ALLOWED = 5
-REQUEST_MAX_LENGTH = 100
+REQUEST_MAX_LENGTH = 128
 
 # global socket declaration
 s = socket.socket()
@@ -113,7 +113,9 @@ def send_error(c, errorMessage):
 def get_request(c, ip):
 
     # read the request from the client
-    request = c.recv(REQUEST_MAX_LENGTH).decode()
+    encrypted_request = c.recv(REQUEST_MAX_LENGTH)
+
+    request = encryption.decrypt_using_private_key(encrypted_request)
 
     # check error and send back if error
     if (check_request(request) == False):
@@ -223,17 +225,19 @@ def send_ledger(c, ip):
     c.send(helper.pad_string("Server is ready to send ledger").encode())
 
     # read bytes and set up counter
-    l = f.read(BYTES_TO_SEND)
+    l = f.read(encryption.MESSAGE_CHUNK_LIMIT)
     byte = BYTES_TO_SEND
 
     # a forever loop untill file gets sent
     while (l):
 
+        encrypted_l = encryption.encrypt_using_public_key(l, ledger.get_pubkey(ip))
+
         # send the bytes
-        c.send(l)
+        c.send(encrypted_l)
 
         # read more bytes and incrementing counter
-        l = f.read(BYTES_TO_SEND)
+        l = f.read(encryption.MESSAGE_CHUNK_LIMIT)
         byte += BYTES_TO_SEND
 
     # time and space prints

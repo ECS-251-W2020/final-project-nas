@@ -119,6 +119,27 @@ def check_owner(filename, IP):
 	return False
 
 #
+# Function to return the public key of an IP
+#
+def get_pubkey(IP):
+
+	# checks if ledger file exists
+	if path.exists(LEDGER_PATH) == False:
+		return False
+
+	# read the ledger file into a dictionary
+	with open(LEDGER_PATH) as f:
+		ledger = json.load(f)
+
+	# check if client is the atual owner of the file
+	for node in ledger["Nodes"]:
+		if node["IP"] == IP:
+			return node["Key"]
+
+	print("Key not found for IP")
+	return None
+
+#
 # Function to get the list of ips from the ledger
 #
 def get_ips():
@@ -140,4 +161,3 @@ def get_ips():
 
 	# returns the new list of ips
 	return ips
-

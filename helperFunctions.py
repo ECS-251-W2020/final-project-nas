@@ -5,7 +5,7 @@ from textwrap import wrap
 
 from ledgerFunctions import LEDGER_PATH
 
-REQUEST_MAX_LENGTH = 100
+REQUEST_MAX_LENGTH = 128
 
 #
 # Pad a request string to REQUEST_MAX_LENGTH

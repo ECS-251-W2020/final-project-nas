@@ -7,7 +7,7 @@ import ledgerFunctions as ledger
 import encryption
 
 BYTES_TO_SEND = 1024
-REQUEST_MAX_LENGTH = 100
+REQUEST_MAX_LENGTH = 128
 
 #
 # Creates a socket that has a connection with the specied host and port
@@ -242,8 +242,9 @@ def pull_ledger(ip):
     helper.clean_directory()
 
     # create a new node request for the server and encode it to bytes
-    cmd = helper.pad_string("pull_ledger ledger.json")
-    s.send(cmd.encode())
+    cmd = "pull_ledger ledger.json"
+    encrypted_cmd = encryption.encrypt_using_public_key(cmd, ledger.get_pubkey(ip))
+    s.send(encrypted_cmd)
 
     # recieve confirmation response from server
     receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -259,7 +260,8 @@ def pull_ledger(ip):
         while True:
 
             #receive 1024 bytes at a time and write them to a file
-            bytes = s.recv(1024)
+            encrypted_bytes = s.recv(1024)
+            bytes = encryption.decrypt_using_private_key(encrypted_bytes)
             file.write(bytes)
 
             #break infinite loop once all bytes are transferred

@@ -62,6 +62,6 @@ def decrypt_using_private_key(encrypted_message):
 
     for message in message_split:
         #server decrypts it using its own private key
-        decrypted_message += rsa.decrypt(message,my_final_private_key).decode()
+        decrypted_message += rsa.decrypt(message,my_final_private_key)
 
     return decrypted_message
