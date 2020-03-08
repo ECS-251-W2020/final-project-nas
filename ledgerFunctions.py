@@ -140,3 +140,4 @@ def get_ips():
 
 	# returns the new list of ips
 	return ips
+
