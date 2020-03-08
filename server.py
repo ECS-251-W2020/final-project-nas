@@ -116,9 +116,11 @@ def get_request(c, ip):
     # read the request from the client
     encrypted_request = c.recv(REQUEST_MAX_LENGTH)
 
-    request = encryption.decrypt_using_private_key(encrypted_request).decode()
-
-    print("Request :", request)
+    # make sure the command sent is encrypted using the servers pubkey
+    try:
+        request = encryption.decrypt_using_private_key(encrypted_request).decode()
+    except:
+        return
 
     # check error and send back if error
     if (check_request(request) == False):
@@ -224,16 +226,18 @@ def send_ledger(c, ip):
         c.close()
         return
 
-    # send confirmation
+    # send confirmation in plaintext
     c.send(helper.pad_string("Server is ready to send ledger").encode())
 
+    # initialize an empty bytestring for the new pubkey
     encryptedClientPubkey = b''
 
+    # client pubkey is received in 2 parts
     for i in range(2):
         encryptedClientPubkey += c.recv(REQUEST_MAX_LENGTH)
 
+    # decrypt the client pubkey
     clientPubkey = encryption.decrypt_using_private_key(encryptedClientPubkey).decode()
-    print("R :", clientPubkey)
 
     # read bytes and set up counter
     l = f.read(encryption.MESSAGE_CHUNK_LIMIT)
