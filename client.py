@@ -79,7 +79,7 @@ def send_file(filename):
     byteString = f.read()
 
     # seperate it into files
-    byteArray = helper.splitData(byteString, len(ledger.get_ips()))
+    byteArray = helper.split_data_chunk_number(byteString, len(ledger.get_ips()))
 
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
@@ -165,7 +165,7 @@ def receive_file(filename):
     try:
         file = open("directory/" + filename, 'wb')
     except:
-        os.system("mkdir directory")
+        os.mkdir("directory")
         file = open("directory/" + filename, 'wb')
 
     # going through the list of ips and making the request

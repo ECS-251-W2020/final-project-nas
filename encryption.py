@@ -1,13 +1,17 @@
 import rsa
+from textwrap import wrap
+import helperFunctions as helper
 
 PRIVATE_KEY_PATH = "private_key.pem"
+MESSAGE_CHUNK_LIMIT = 100
+ENCRYPTION_BYTE_LIMIT = 128
 
 # Creates private and public keys for a node in the network and stores these
 # keys on the local machine in PEM formats
 def create_keys():
 
     #Creates new keys, public and private key
-    (servers_pubkey, servers_privkey) = rsa.newkeys(512)
+    (servers_pubkey, servers_privkey) = rsa.newkeys(1024)
 
     # Saves private and public keys on local machine in PEM format
     priv_key_file = open(PRIVATE_KEY_PATH, 'wb')
@@ -19,18 +23,25 @@ def create_keys():
     return pubkey
 
 # Performs encryption a message usign a provided public key
-def encrypt_using_public_key(message,public_key):
+def encrypt_using_public_key(data,public_key):
 
     public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + public_key + \
                 "\n-----END RSA PUBLIC KEY-----\n"
-
-    # Enter the linux command and encode it in UTF-8,since RSA module operates
-    # on bytes, not strings
-    encoded_message = message.encode()
     my_final_public_key = rsa.PublicKey.load_pkcs1(public_key)
 
-    #client encrypts its linux command using servers public key
-    encrypted_message = rsa.encrypt(encoded_message, my_final_public_key)
+    #split data into equally sized chunks
+    message_split = helper.split_data_chunk_size(data, MESSAGE_CHUNK_LIMIT)
+
+    #create an empty byte string for encrypted message
+    encrypted_message = b''
+
+    for message in message_split:
+        # Enter the linux command and encode it in UTF-8,since RSA module operates
+        # on bytes, not strings
+        encoded_message = message.encode()
+
+        #client encrypts its linux command using servers public key
+        encrypted_message += rsa.encrypt(encoded_message, my_final_public_key)
 
     return encrypted_message
 
@@ -45,11 +56,12 @@ def decrypt_using_private_key(encrypted_message):
     #Convert the PEM format to normal private key format
     my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
 
-    #server decrypts it using its own private key
-    message = rsa.decrypt(encrypted_message,my_final_private_key)
+    message_split = helper.split_data_chunk_size(encrypted_message, ENCRYPTION_BYTE_LIMIT)
 
-    #Decoded message
-    decoded_message = message.decode()
-    return decoded_message
+    decrypted_message = ''
 
-create_keys()
+    for message in message_split:
+        #server decrypts it using its own private key
+        decrypted_message += rsa.decrypt(message,my_final_private_key).decode()
+
+    return decrypted_message
