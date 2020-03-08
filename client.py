@@ -255,13 +255,18 @@ def pull_ledger(ip, serverPubkey):
 
         # generate a public and private key for the host computer
         pubkey = encryption.create_keys()
+        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
+
         pubkey_split = []
-        pubkey_split.append[pubkey[0:107]]
-        pubkey_split.append[pubkey[108:-1]]
+        pubkey_split.append(encrypted_pubkey[0:REQUEST_MAX_LENGTH])
+        pubkey_split.append(encrypted_pubkey[REQUEST_MAX_LENGTH:])
+        print(pubkey)
+        print(pubkey_split)
+            
 
         for pubkey_part in pubkey_split:
-            encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
-            s.send(encrypted_pubkey_part)
+            #encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
+            s.send(pubkey_part)
 
         print("Downloading ledger")
         #open a new ledger and store the received bytes

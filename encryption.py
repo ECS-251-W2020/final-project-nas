@@ -25,8 +25,11 @@ def create_keys():
 # Performs encryption a message usign a provided public key
 def encrypt_using_public_key(data,public_key):
 
+    public_key = "MIGJAoGBAIm6GoLh25O8q9CCvXyJuaq8PVLm3Haixbem7e7696lqhfXQtbVtZCZU\no1Cqwl7iNvqI+JzCMXcEcnXuxGKUQGLd4ijVdH1bQAahRhOvjzM/zEbC9g0GHg8q\n7yIvdrRt4uOuHiXFoUOtwfr01ZNkz7sfxmp3cj8xIpt0r+NgjdcVAgMBAAE="
+
     public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + public_key + \
                 "\n-----END RSA PUBLIC KEY-----\n"
+    #print(public_key)
     my_final_public_key = rsa.PublicKey.load_pkcs1(public_key)
 
     #split data into equally sized chunks
@@ -58,7 +61,7 @@ def decrypt_using_private_key(encrypted_message):
 
     message_split = helper.split_data_chunk_size(encrypted_message, ENCRYPTION_BYTE_LIMIT)
 
-    decrypted_message = ''
+    decrypted_message = b''
 
     for message in message_split:
         #server decrypts it using its own private key
