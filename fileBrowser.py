@@ -73,7 +73,7 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
 
     # Populate using 
     def populate(self):
-        path = "/Users/aakaashkapoor/Desktop/final-project-nas/directory"
+        path = "directory"
         self.model = ExtraColumnModel()
         self.model.setRootPath((QtCore.QDir.rootPath()))
         print(self.model)
