@@ -220,7 +220,13 @@ def receive_file(filename):
         else:
             print("Something went wrong while receiving the file.")
 
-        #close the file once transfer is complete
+    # try to remove the original sharded message
+    try:
+        os.remove("directory/" + ledger.get_shard(filename, helper.find_ip()))
+    except:
+        print("Unable to remove shard from local directory")
+
+    #close the file once transfer is complete
     file.close()
 
 
