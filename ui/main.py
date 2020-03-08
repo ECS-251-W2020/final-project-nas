@@ -40,6 +40,11 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        return MainWindow
+
+    def resizeEvent(self, event):
+        self.btn.move(self.window.frameGeometry().width() - 120, self.window.frameGeometry().height() - 112)  
+
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
 

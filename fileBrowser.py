@@ -1,6 +1,7 @@
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
+import client
 import os
 import sys
 
@@ -53,56 +54,91 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
     # Initialize the class with our custom context menu
     def __init__(self, maya=False):
         super(MyFileBrowser, self).__init__()
-        self.setupUi(self)
+
+        # get the window
+        self.window = self.setupUi(self)
+
+        # set up the model
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
-        btn = QtWidgets.QPushButton('Add File', self)
-        btn.resize(90,30)
-        btn.clicked.connect(self.file_picker)
-        btn.move(680, 510)  
+
+        # button set up
+        self.btn = QtWidgets.QPushButton('Add File', self)
+        self.btn.resize(90,30)
+        self.btn.clicked.connect(self.file_picker)
+        self.btn.move(self.window.frameGeometry().width() - 120, self.window.frameGeometry().height() - 112)  
         self.populate()
+
 
     # Function to pick files from the browser
     def file_picker(self):
-        filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
-                                                       'Single File',
-                                                       "~/",
-                                                      '*')
-        print('filePath',filePath, '\n')
+
+        # get the filename 
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', "~/",'*')[0]
+        
+        # call the the client read
+        client.send_file(filename)
+
         
 
-    # Populate using 
+    # Populate the UI correctly
     def populate(self):
-        path = "/Users/aakaashkapoor/Desktop/final-project-nas/directory"
+
+        # file population to the UI in the current 
+        path = "directory"
         self.model = ExtraColumnModel()
         self.model.setRootPath((QtCore.QDir.rootPath()))
-        print(self.model)
         self.treeView.setModel(self.model)
+
+        # changing width of the first column
         self.treeView.setColumnWidth(0, 300)
         self.treeView.setRootIndex(self.model.index(path))
+
+        # files will be sorted
         self.treeView.setSortingEnabled(True)
 
+
+    # Creates the context munu
     def context_menu(self):
+
+        # sets up the menu
         menu = QtWidgets.QMenu()
-        
-        # open.triggered.connect(self.open_file)
-        # open = menu.addAction("Push Changes")
-        # open.triggered.connect(self.open_file)
+
+        # creates a menu based on the filetype
         filename = self.model.fileName(self.treeView.currentIndex())
         filetype = self.model.type(self.treeView.currentIndex()).split(" ")[0]
+
+        # if file is not present here
         if filetype[-1].isdigit() == True:
-            open = menu.addAction("Read File")
+            open = menu.addAction("get file from the network")
+            open.triggered.connect(self.read_file)
+
+        # file exists in the curent system
         else:
-            open = menu.addAction("Open file")
+            open = menu.addAction("push file to the network")
+            open.triggered.connect(self.write_file)
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
 
-    def open_file(self):
-        index = self.treeView.currentIndex()
-        file_path = self.model.filePath(index)
-        print("Tried to open file:", file_path)
-        # os.startfile(file_path)
+
+    # Should call the file read from the client
+    def read_file(self):
+
+        # get the current filename
+        filename = self.model.fileName(self.treeView.currentIndex())
+
+        # call the the client read
+        client.recieve_file(filename)
+
+    # Should call the file write to client
+    def write_file(self):
+
+        # get the current filename
+        filename = self.model.fileName(self.treeView.currentIndex())
+
+        # call the the client read
+        client.send_file(filename)
 
 
 if __name__ == '__main__':
