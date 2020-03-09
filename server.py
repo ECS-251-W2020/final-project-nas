@@ -190,6 +190,7 @@ def update_ledger(c, filename, ip):
 
         # receive 1024 bytes at a time and write them to a file
         bytes = c.recv(BYTES_TO_SEND)
+        bytes = encryption.decrypt_using_private_key(bytes)
         file.write(bytes)
         byte += BYTES_TO_SEND
 

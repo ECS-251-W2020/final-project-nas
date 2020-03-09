@@ -262,7 +262,7 @@ def pull_ledger(ip, serverPubkey):
         pubkey_split.append(encrypted_pubkey[REQUEST_MAX_LENGTH:])
         print(pubkey)
         print(pubkey_split)
-            
+
 
         for pubkey_part in pubkey_split:
             #encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
@@ -320,16 +320,21 @@ def update_ledger():
     # going through all the ips
     for ip in ledger.get_ips():
 
+        # get the key of the server we want to send to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # run the client
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("update_ledger ledger.json")
-        s.send(cmd.encode())
+        cmd = "update_ledger ledger.json"
+        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+        s.send(encryptedCmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
-        print(recv)
+
+
 
         # check if the servor responded with an error
         if(recv.split(' ', 1)[0] != "Error"):
@@ -337,12 +342,15 @@ def update_ledger():
             # opening a file
             f = open(ledger.LEDGER_PATH, 'rb')
 
-            # read bytes and set up counter
+            # read bytes and set up counter "byte"
             l = f.read(BYTES_TO_SEND)
             byte = BYTES_TO_SEND
 
             # a forever loop untill file gets sent
             while (l):
+
+                # encrypt the data with the pubkey of the server
+                encrypted_l = encryption.encrypt_using_public_key(l.decode(), serverPubkey)
 
                 # send the bytes
                 s.send(l)
@@ -380,12 +388,14 @@ def start_network():
 #
 def main():
 
+    pubKey = "MIGJAoGBAIm6GoLh25O8q9CCvXyJuaq8PVLm3Haixbem7e7696lqhfXQtbVtZCZU\no1Cqwl7iNvqI+JzCMXcEcnXuxGKUQGLd4ijVdH1bQAahRhOvjzM/zEbC9g0GHg8q\n7yIvdrRt4uOuHiXFoUOtwfr01ZNkz7sfxmp3cj8xIpt0r+NgjdcVAgMBAAE="
+
     if(sys.argv[1] == "push"):
         send_file(sys.argv[2])
     elif(sys.argv[1] == "pull"):
         receive_file(sys.argv[2])
     elif(sys.argv[1] == "pull_ledger"):
-        pull_ledger(sys.argv[2],sys.argv[3])
+        pull_ledger(sys.argv[2], pubKey)
     elif(sys.argv[1] == "update_ledger"):
         update_ledger()
     elif(sys.argv[1] == "start_network"):

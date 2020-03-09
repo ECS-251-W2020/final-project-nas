@@ -25,8 +25,6 @@ def create_keys():
 # Performs encryption a message usign a provided public key
 def encrypt_using_public_key(data,public_key):
 
-    public_key = "MIGJAoGBAIm6GoLh25O8q9CCvXyJuaq8PVLm3Haixbem7e7696lqhfXQtbVtZCZU\no1Cqwl7iNvqI+JzCMXcEcnXuxGKUQGLd4ijVdH1bQAahRhOvjzM/zEbC9g0GHg8q\n7yIvdrRt4uOuHiXFoUOtwfr01ZNkz7sfxmp3cj8xIpt0r+NgjdcVAgMBAAE="
-
     public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + public_key + \
                 "\n-----END RSA PUBLIC KEY-----\n"
     #print(public_key)
@@ -50,6 +48,7 @@ def encrypt_using_public_key(data,public_key):
 
 #Performs decryption on an encrypted message when keys
 #are present locally on a machine
+# byte -> byte
 def decrypt_using_private_key(encrypted_message):
 
     #Read the private key stored in secondary memory in PEM format
