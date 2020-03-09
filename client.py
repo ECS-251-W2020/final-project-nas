@@ -34,12 +34,19 @@ def lock_servers():
     # go through the ips and lock them
     for ip in ledger.get_ips():
 
+        # get the key of the server we want to send to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # connect to the host you want to send file to
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("lock " + helper.find_ip())
-        s.send(cmd.encode())
+        cmd = "lock " + helper.find_ip()
+
+        # Encrypt cmd using servers public key
+        encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+
+        s.send(encrypted_cmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -81,8 +88,14 @@ def send_file(filename):
     # seperate it into files
     byteArray = helper.split_data_chunk_number(byteString, len(ledger.get_ips()))
 
+    # get clients public key
+    myPubkey = ledger.get_pubkey(helper.find_ip())
+
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
+
+        # get the key of the server we want to send the file to
+        serverPubkey = ledger.get_pubkey(ip)
 
         # check if the ip is same as our ip
         if(ip == helper.find_ip()):
@@ -104,8 +117,12 @@ def send_file(filename):
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("push " + filename + str(index))
-        s.send(cmd.encode())
+        cmd = "push " + filename + str(index)
+
+        # Encrypt cmd using servers public key
+        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+
+        s.send(encryptedCmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -127,6 +144,9 @@ def send_file(filename):
                     byte = toSend[int(i):]
                 else:
                     byte = toSend[int(i):int(i + BYTES_TO_SEND)]
+
+                # encrypting whatever data we need to
+                byte = encryption.encrypt_using_public_key(byte.decode(), myPubkey)
 
                 # send the bytes
                 s.send(byte)
