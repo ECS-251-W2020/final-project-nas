@@ -108,7 +108,7 @@ def send_file(filename):
                 file = open("directory/" + filename + str(index), 'wb')
 
             # write to the file and exncrypt the data
-            file.write(encryption.encrypt_using_public_key(byteArray[index].decode(), myPubkey)
+            file.write(encryption.encrypt_using_public_key(byteArray[index].decode(), myPubkey))
 
             # move forward in the for loop
             continue
@@ -191,6 +191,9 @@ def receive_file(filename):
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
 
+        # get the key of the server we want to send the file to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # check if the current ip in the ledger is the clients
         if(ip == helper.find_ip()):
 
@@ -201,7 +204,7 @@ def receive_file(filename):
             tempFile = open("directory/" + shard, 'rb')
 
             # copy the contents of the shard to the new file and decrypt the data
-            file.write(encryption.decrypt_using_private_key(tempFile.read())
+            file.write(encryption.decrypt_using_private_key(tempFile.read()))
 
             # continue iterating through the loop
             continue
