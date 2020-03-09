@@ -37,12 +37,9 @@ def encrypt_using_public_key(data,public_key):
     encrypted_message = b''
 
     for message in message_split:
-        # Enter the linux command and encode it in UTF-8,since RSA module operates
-        # on bytes, not strings
-        encoded_message = message.encode()
-
+        
         #client encrypts its linux command using servers public key
-        encrypted_message += rsa.encrypt(encoded_message, my_final_public_key)
+        encrypted_message += rsa.encrypt(message, my_final_public_key)
 
     return encrypted_message
 

@@ -44,7 +44,7 @@ def lock_servers():
         cmd = "lock " + helper.find_ip()
 
         # Encrypt cmd using servers public key
-        encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+        encrypted_cmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
 
         s.send(encrypted_cmd)
 
@@ -108,7 +108,7 @@ def send_file(filename):
                 file = open("directory/" + filename + str(index), 'wb')
 
             # write to the file and exncrypt the data
-            file.write(encryption.encrypt_using_public_key(byteArray[index].decode(), myPubkey))
+            file.write(encryption.encrypt_using_public_key(byteArray[index], myPubkey))
 
             # move forward in the for loop
             continue
@@ -120,7 +120,7 @@ def send_file(filename):
         cmd = "push " + filename + str(index)
 
         # Encrypt cmd using servers public key
-        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
 
         s.send(encryptedCmd)
 
@@ -146,7 +146,7 @@ def send_file(filename):
                     byte = toSend[int(i):int(i + BYTES_TO_SEND)]
 
                 # encrypting whatever data we need to
-                byte = encryption.encrypt_using_public_key(byte.decode(), myPubkey)
+                byte = encryption.encrypt_using_public_key(byte, myPubkey)
 
                 # send the bytes
                 s.send(byte)
@@ -221,8 +221,8 @@ def receive_file(filename):
         cmd = helper.pad_string("pull " + shard)
 
         # Encrypt cmd using servers public key
-        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
-        s.send(cmd.encode())
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+        s.send(encryptedCmd)
 
         # recieve confirmation response from server
         receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -274,7 +274,7 @@ def pull_ledger(ip, serverPubkey):
     cmd = "pull_ledger ledger.json"
 
     # Encrypt cmd using servers public key
-    encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+    encrypted_cmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
 
     #Send the encrypted command to the server in bytes
     s.send(encrypted_cmd)
@@ -290,7 +290,7 @@ def pull_ledger(ip, serverPubkey):
         pubkey = encryption.create_keys()
 
         #Encrypt the public key using server public key
-        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
+        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey.encode(), serverPubkey)
 
         #Encrypted public key is split into
         pubkey_split = []
@@ -363,7 +363,7 @@ def update_ledger():
 
         # create a push request for the server and encode it to bytes
         cmd = "update_ledger ledger.json"
-        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
         s.send(encryptedCmd)
 
         # recieve response from server
@@ -383,7 +383,7 @@ def update_ledger():
             while (l):
 
                 # encrypt the data with the pubkey of the server
-                encrypted_l = encryption.encrypt_using_public_key(l.decode(), serverPubkey)
+                encrypted_l = encryption.encrypt_using_public_key(l, serverPubkey)
 
                 # send the bytes
                 s.send(encrypted_l)
