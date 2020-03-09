@@ -262,8 +262,8 @@ def pull_ledger(ip, serverPubkey):
 
         #Encrypt the public key using server public key
         encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
-        
-        #Encrypted public key is split into  
+
+        #Encrypted public key is split into
         pubkey_split = []
         pubkey_split.append(encrypted_pubkey[0:REQUEST_MAX_LENGTH])
         pubkey_split.append(encrypted_pubkey[REQUEST_MAX_LENGTH:])
@@ -272,7 +272,6 @@ def pull_ledger(ip, serverPubkey):
 
 
         for pubkey_part in pubkey_split:
-            #encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
             s.send(pubkey_part)
 
         print("Downloading ledger")
@@ -341,8 +340,6 @@ def update_ledger():
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
 
-
-
         # check if the servor responded with an error
         if(recv.split(' ', 1)[0] != "Error"):
 
@@ -360,7 +357,7 @@ def update_ledger():
                 encrypted_l = encryption.encrypt_using_public_key(l.decode(), serverPubkey)
 
                 # send the bytes
-                s.send(l)
+                s.send(encrypted_l)
 
                 # read more bytes and incrementing counter
                 l = f.read(BYTES_TO_SEND)
@@ -395,7 +392,7 @@ def start_network():
 #
 def main():
 
-    pubKey = "MIGJAoGBAIm6GoLh25O8q9CCvXyJuaq8PVLm3Haixbem7e7696lqhfXQtbVtZCZU\no1Cqwl7iNvqI+JzCMXcEcnXuxGKUQGLd4ijVdH1bQAahRhOvjzM/zEbC9g0GHg8q\n7yIvdrRt4uOuHiXFoUOtwfr01ZNkz7sfxmp3cj8xIpt0r+NgjdcVAgMBAAE="
+    pubKey = "MIGJAoGBAIyRlQ56E/7rsQmsulYp/2+FOMd3/B11wOY7WP0blJUaO1mBJwUSKWs0\nFCr49jbc2g1LROCENXS864IQozcS3Z+o+VKPd/oGnwnhx0PXIBhPaQ3o/b9Hm8nu\ndHakdI1nnu7rq5gug068tNK/L00BBWVtsTGHHfs1ClOvkoShZSSFAgMBAAE="
 
     if(sys.argv[1] == "push"):
         send_file(sys.argv[2])
