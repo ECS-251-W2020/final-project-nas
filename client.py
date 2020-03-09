@@ -243,7 +243,11 @@ def pull_ledger(ip, serverPubkey):
 
     # create a new node request for the server and encode it to bytes
     cmd = "pull_ledger ledger.json"
+
+    # Encrypt cmd using servers public key
     encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+
+    #Send the encrypted command to the server in bytes
     s.send(encrypted_cmd)
 
     # recieve confirmation response from server
@@ -255,8 +259,11 @@ def pull_ledger(ip, serverPubkey):
 
         # generate a public and private key for the host computer
         pubkey = encryption.create_keys()
-        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
 
+        #Encrypt the public key using server public key
+        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
+        
+        #Encrypted public key is split into  
         pubkey_split = []
         pubkey_split.append(encrypted_pubkey[0:REQUEST_MAX_LENGTH])
         pubkey_split.append(encrypted_pubkey[REQUEST_MAX_LENGTH:])
