@@ -107,8 +107,8 @@ def send_file(filename):
                 os.mkdir("directory")
                 file = open("directory/" + filename + str(index), 'wb')
 
-            # write to it
-            file.write(byteArray[index])
+            # write to the file and exncrypt the data
+            file.write(encryption.encrypt_using_public_key(byteArray[index].decode(), myPubkey)
 
             # move forward in the for loop
             continue
@@ -200,8 +200,8 @@ def receive_file(filename):
             # open the shard to combine it with the rest of the file
             tempFile = open("directory/" + shard, 'rb')
 
-            # copy the contents of the shard to the new file
-            file.write(tempFile.read())
+            # copy the contents of the shard to the new file and decrypt the data
+            file.write(encryption.decrypt_using_private_key(tempFile.read())
 
             # continue iterating through the loop
             continue
@@ -216,6 +216,9 @@ def receive_file(filename):
 
         # create a pull request for the server and encode it to bytes
         cmd = helper.pad_string("pull " + shard)
+
+        # Encrypt cmd using servers public key
+        encryptedCmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
         s.send(cmd.encode())
 
         # recieve confirmation response from server
@@ -228,8 +231,11 @@ def receive_file(filename):
 
             while True:
 
-                #receive 1024 bytes at a time and write them to a file
+                #receive 1024 bytes at a time and decrypt the data
                 bytes = s.recv(1024)
+                bytes = encryption.decrypt_using_private_key(bytes)
+
+                #write the decrypted data to a file
                 file.write(bytes)
 
                 #break infinite loop once all bytes are transferred
