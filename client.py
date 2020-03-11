@@ -108,13 +108,15 @@ def send_file(filename):
                 file = open("directory/" + filename + str(index), 'wb')
 
             # write to the file and exncrypt the data
-            file.write(encryption.encrypt_using_public_key(byteArray[index], myPubkey))
+            file.write(byteArray[index])
 
             # move forward in the for loop
             continue
 
         # connect to the host you want to send file to
         s = run_client(ip)
+
+        print(filename)
 
         # create a push request for the server and encode it to bytes
         cmd = "push " + filename + str(index)
@@ -132,6 +134,7 @@ def send_file(filename):
 
             # get the string we want to send
             toSend = byteArray[index]
+            byteCount = 0
 
             # logging
             print("Starting to send", len(toSend),"bytes to", ip)
@@ -150,6 +153,10 @@ def send_file(filename):
 
                 # send the bytes
                 s.send(byte)
+
+                byteCount += BYTES_TO_SEND
+
+                # print("Sent", byteCount, "bytes")
 
             # logging
             print("Finished sending file")
@@ -204,7 +211,7 @@ def receive_file(filename):
             tempFile = open("directory/" + shard, 'rb')
 
             # copy the contents of the shard to the new file and decrypt the data
-            file.write(encryption.decrypt_using_private_key(tempFile.read()))
+            file.write(tempFile.read())
 
             # continue iterating through the loop
             continue
@@ -423,18 +430,21 @@ def main():
 
     pubKey = "MIGJAoGBAIyRlQ56E/7rsQmsulYp/2+FOMd3/B11wOY7WP0blJUaO1mBJwUSKWs0\nFCr49jbc2g1LROCENXS864IQozcS3Z+o+VKPd/oGnwnhx0PXIBhPaQ3o/b9Hm8nu\ndHakdI1nnu7rq5gug068tNK/L00BBWVtsTGHHfs1ClOvkoShZSSFAgMBAAE="
 
-    if(sys.argv[1] == "push"):
-        send_file(sys.argv[2])
-    elif(sys.argv[1] == "pull"):
-        receive_file(sys.argv[2])
-    elif(sys.argv[1] == "pull_ledger"):
-        pull_ledger(sys.argv[2], pubKey)
-    elif(sys.argv[1] == "update_ledger"):
-        update_ledger()
-    elif(sys.argv[1] == "start_network"):
-        start_network()
-    else:
-        print("Unrecognized command entered")
-    # s.close()
+    try: 
 
+        if(sys.argv[1] == "push"):
+            send_file(sys.argv[2])
+        elif(sys.argv[1] == "pull"):
+            receive_file(sys.argv[2])
+        elif(sys.argv[1] == "pull_ledger"):
+            pull_ledger(sys.argv[2], pubKey)
+        elif(sys.argv[1] == "update_ledger"):
+            update_ledger()
+        elif(sys.argv[1] == "start_network"):
+            start_network()
+        else:
+            print("Unrecognized command entered")
+    except:
+        return
+    # s.close()
 main()

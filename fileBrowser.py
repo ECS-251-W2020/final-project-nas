@@ -129,7 +129,7 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
         filename = self.model.fileName(self.treeView.currentIndex())
 
         # call the the client read
-        client.recieve_file(filename)
+        client.receive_file(filename)
 
     # Should call the file write to client
     def write_file(self):
