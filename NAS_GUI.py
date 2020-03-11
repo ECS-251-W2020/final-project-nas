@@ -9,7 +9,7 @@ import PyQt5.QtWidgets
 import sys 
 import os
 import subprocess
-#import client as client_functions
+import client 
 #import encryption
 #import helperFunctions as helper
 #import ledgerFunctions as ledger
@@ -94,12 +94,12 @@ class WidgetGallery(QDialog):
 
     # Enables the user to connect to the network, takes inputs from ip_input and server_public_key_input
     def join_the_network(self):
-            client_functions.pull_legder(self.ip_input.text(),self.server_public_key_input.text())
+            client.pull_legder(self.ip_input.text(),self.server_public_key_input.text())
             open_fileBrowser()
     
     # Enables the user to create and start the NAS network
     def start_my_network(self):
-            client_functions.start_network()
+            client.start_network()
             open_fileBrowser()
 
     #Just a check to see if text input gets printed when we click join the network
