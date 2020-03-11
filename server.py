@@ -20,6 +20,7 @@ from _thread import *
 # 124 - Lock failure, server already locked by another client
 # 125 - Lock failure, server not locked before write
 # 126 - Lock failure, server not locked before ledger update
+# 145 - Server unable to decrypt command
 #
 
 # macro for min bytes
@@ -120,6 +121,8 @@ def get_request(c, ip):
     try:
         request = encryption.decrypt_using_private_key(encrypted_request).decode()
     except:
+        send_error(c, "Error 145: Server unable to decrypt command")
+        print("Error in decryption")
         return
 
     # check error and send back if error
@@ -129,6 +132,8 @@ def get_request(c, ip):
 
     # get type and filename from request
     [requestType, filename] = str(request).lower().split()
+
+    print(requestType, filename)
 
     # send request
     if (requestType == "pull"):
@@ -190,6 +195,7 @@ def update_ledger(c, filename, ip):
 
         # receive 1024 bytes at a time and write them to a file
         bytes = c.recv(BYTES_TO_SEND)
+        bytes = encryption.decrypt_using_private_key(bytes)
         file.write(bytes)
         byte += BYTES_TO_SEND
 
@@ -246,7 +252,7 @@ def send_ledger(c, ip):
     # a forever loop untill file gets sent
     while (l):
 
-        encrypted_l = encryption.encrypt_using_public_key(l.decode(), clientPubkey)
+        encrypted_l = encryption.encrypt_using_public_key(l, clientPubkey)
 
         # send the bytes
         c.send(encrypted_l)
@@ -280,6 +286,7 @@ def send_file(c, filename):
         return
 
     # send confirmation
+    print("Server is ready to send file")
     c.send(helper.pad_string("Server is ready to send file").encode())
 
     # read bytes and set up counter

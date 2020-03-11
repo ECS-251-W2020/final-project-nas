@@ -34,12 +34,19 @@ def lock_servers():
     # go through the ips and lock them
     for ip in ledger.get_ips():
 
+        # get the key of the server we want to send to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # connect to the host you want to send file to
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("lock " + helper.find_ip())
-        s.send(cmd.encode())
+        cmd = "lock " + helper.find_ip()
+
+        # Encrypt cmd using servers public key
+        encrypted_cmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+
+        s.send(encrypted_cmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -81,8 +88,14 @@ def send_file(filename):
     # seperate it into files
     byteArray = helper.split_data_chunk_number(byteString, len(ledger.get_ips()))
 
+    # get clients public key
+    myPubkey = ledger.get_pubkey(helper.find_ip())
+
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
+
+        # get the key of the server we want to send the file to
+        serverPubkey = ledger.get_pubkey(ip)
 
         # check if the ip is same as our ip
         if(ip == helper.find_ip()):
@@ -94,8 +107,8 @@ def send_file(filename):
                 os.mkdir("directory")
                 file = open("directory/" + filename + str(index), 'wb')
 
-            # write to it
-            file.write(byteArray[index])
+            # write to the file and exncrypt the data
+            file.write(encryption.encrypt_using_public_key(byteArray[index], myPubkey))
 
             # move forward in the for loop
             continue
@@ -104,8 +117,12 @@ def send_file(filename):
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("push " + filename + str(index))
-        s.send(cmd.encode())
+        cmd = "push " + filename + str(index)
+
+        # Encrypt cmd using servers public key
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+
+        s.send(encryptedCmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -127,6 +144,9 @@ def send_file(filename):
                     byte = toSend[int(i):]
                 else:
                     byte = toSend[int(i):int(i + BYTES_TO_SEND)]
+
+                # encrypting whatever data we need to
+                byte = encryption.encrypt_using_public_key(byte, myPubkey)
 
                 # send the bytes
                 s.send(byte)
@@ -171,6 +191,9 @@ def receive_file(filename):
     # going through the list of ips and making the request
     for index, ip in enumerate(ledger.get_ips()):
 
+        # get the key of the server we want to send the file to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # check if the current ip in the ledger is the clients
         if(ip == helper.find_ip()):
 
@@ -180,8 +203,8 @@ def receive_file(filename):
             # open the shard to combine it with the rest of the file
             tempFile = open("directory/" + shard, 'rb')
 
-            # copy the contents of the shard to the new file
-            file.write(tempFile.read())
+            # copy the contents of the shard to the new file and decrypt the data
+            file.write(encryption.decrypt_using_private_key(tempFile.read()))
 
             # continue iterating through the loop
             continue
@@ -196,7 +219,10 @@ def receive_file(filename):
 
         # create a pull request for the server and encode it to bytes
         cmd = helper.pad_string("pull " + shard)
-        s.send(cmd.encode())
+
+        # Encrypt cmd using servers public key
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+        s.send(encryptedCmd)
 
         # recieve confirmation response from server
         receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
@@ -208,8 +234,11 @@ def receive_file(filename):
 
             while True:
 
-                #receive 1024 bytes at a time and write them to a file
+                #receive 1024 bytes at a time and decrypt the data
                 bytes = s.recv(1024)
+                bytes = encryption.decrypt_using_private_key(bytes)
+
+                #write the decrypted data to a file
                 file.write(bytes)
 
                 #break infinite loop once all bytes are transferred
@@ -245,7 +274,7 @@ def pull_ledger(ip, serverPubkey):
     cmd = "pull_ledger ledger.json"
 
     # Encrypt cmd using servers public key
-    encrypted_cmd = encryption.encrypt_using_public_key(cmd, serverPubkey)
+    encrypted_cmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
 
     #Send the encrypted command to the server in bytes
     s.send(encrypted_cmd)
@@ -261,18 +290,17 @@ def pull_ledger(ip, serverPubkey):
         pubkey = encryption.create_keys()
 
         #Encrypt the public key using server public key
-        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey, serverPubkey)
-        
-        #Encrypted public key is split into  
+        encrypted_pubkey = encryption.encrypt_using_public_key(pubkey.encode(), serverPubkey)
+
+        #Encrypted public key is split into
         pubkey_split = []
         pubkey_split.append(encrypted_pubkey[0:REQUEST_MAX_LENGTH])
         pubkey_split.append(encrypted_pubkey[REQUEST_MAX_LENGTH:])
         print(pubkey)
         print(pubkey_split)
-            
+
 
         for pubkey_part in pubkey_split:
-            #encrypted_pubkey_part = encryption.encrypt_using_public_key(pubkey_part, serverPubkey)
             s.send(pubkey_part)
 
         print("Downloading ledger")
@@ -327,16 +355,19 @@ def update_ledger():
     # going through all the ips
     for ip in ledger.get_ips():
 
+        # get the key of the server we want to send to
+        serverPubkey = ledger.get_pubkey(ip)
+
         # run the client
         s = run_client(ip)
 
         # create a push request for the server and encode it to bytes
-        cmd = helper.pad_string("update_ledger ledger.json")
-        s.send(cmd.encode())
+        cmd = "update_ledger ledger.json"
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+        s.send(encryptedCmd)
 
         # recieve response from server
         recv = s.recv(REQUEST_MAX_LENGTH).decode()
-        print(recv)
 
         # check if the servor responded with an error
         if(recv.split(' ', 1)[0] != "Error"):
@@ -344,15 +375,18 @@ def update_ledger():
             # opening a file
             f = open(ledger.LEDGER_PATH, 'rb')
 
-            # read bytes and set up counter
+            # read bytes and set up counter "byte"
             l = f.read(BYTES_TO_SEND)
             byte = BYTES_TO_SEND
 
             # a forever loop untill file gets sent
             while (l):
 
+                # encrypt the data with the pubkey of the server
+                encrypted_l = encryption.encrypt_using_public_key(l, serverPubkey)
+
                 # send the bytes
-                s.send(l)
+                s.send(encrypted_l)
 
                 # read more bytes and incrementing counter
                 l = f.read(BYTES_TO_SEND)
@@ -387,12 +421,14 @@ def start_network():
 #
 def main():
 
+    pubKey = "MIGJAoGBAIyRlQ56E/7rsQmsulYp/2+FOMd3/B11wOY7WP0blJUaO1mBJwUSKWs0\nFCr49jbc2g1LROCENXS864IQozcS3Z+o+VKPd/oGnwnhx0PXIBhPaQ3o/b9Hm8nu\ndHakdI1nnu7rq5gug068tNK/L00BBWVtsTGHHfs1ClOvkoShZSSFAgMBAAE="
+
     if(sys.argv[1] == "push"):
         send_file(sys.argv[2])
     elif(sys.argv[1] == "pull"):
         receive_file(sys.argv[2])
     elif(sys.argv[1] == "pull_ledger"):
-        pull_ledger(sys.argv[2],sys.argv[3])
+        pull_ledger(sys.argv[2], pubKey)
     elif(sys.argv[1] == "update_ledger"):
         update_ledger()
     elif(sys.argv[1] == "start_network"):
