@@ -97,10 +97,12 @@ class WidgetGallery(QDialog):
             client.pull_ledger(self.ip_input.text(),self.server_public_key_input.text())
             self.open_fileBrowser()
     
-    # Enables the user to create and start the NAS network
+    # Enables the user to create and start the NAS network, and close the NAS_GUI
     def start_my_network(self):
             client.start_network()
             self.open_fileBrowser()
+            self.exit_GUI()
+            #print("Hey there!")
 
     #Just a check to see if text input gets printed when we click join the network
     def check_text(self):
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 
     #app = QApplication(sys.argv)
     app = QApplication([])
-    print(PyQt5.QtWidgets.QStyleFactory.keys())
+    #print(PyQt5.QtWidgets.QStyleFactory.keys())
     gallery = WidgetGallery()
     gallery.show()
     sys.exit(app.exec_())
