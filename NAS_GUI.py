@@ -89,18 +89,18 @@ class WidgetGallery(QDialog):
         subprocess.call("ls",shell=True)
 
     # function to open the file browser
-    def open_fileBrowser():
+    def open_fileBrowser(self):
         subprocess.call("python3 fileBrowser.py",shell=True)
 
     # Enables the user to connect to the network, takes inputs from ip_input and server_public_key_input
     def join_the_network(self):
-            client.pull_legder(self.ip_input.text(),self.server_public_key_input.text())
-            open_fileBrowser()
+            client.pull_ledger(self.ip_input.text(),self.server_public_key_input.text())
+            self.open_fileBrowser()
     
     # Enables the user to create and start the NAS network
     def start_my_network(self):
             client.start_network()
-            open_fileBrowser()
+            self.open_fileBrowser()
 
     #Just a check to see if text input gets printed when we click join the network
     def check_text(self):
