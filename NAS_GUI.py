@@ -79,10 +79,11 @@ class WidgetGallery(QDialog):
         layout.setRowStretch(5, 1)
         self.bottomRightGroupBox.setLayout(layout)
 
-    #function for exiting
+    #function for closing the GUI
     def exit_GUI(self):
         print("GUI closed")
-        sys.exit()
+        #sys.exit()
+        self.close()
     
     #function for calling another python script
     def call_client(self):
@@ -95,13 +96,14 @@ class WidgetGallery(QDialog):
     # Enables the user to connect to the network, takes inputs from ip_input and server_public_key_input
     def join_the_network(self):
             client.pull_ledger(self.ip_input.text(),self.server_public_key_input.text())
+            self.exit_GUI()
             self.open_fileBrowser()
     
-    # Enables the user to create and start the NAS network, and close the NAS_GUI
+    # Enables the user to create and start the NAS network, and closes the NAS_GUI
     def start_my_network(self):
             client.start_network()
-            self.open_fileBrowser()
             self.exit_GUI()
+            self.open_fileBrowser()
             #print("Hey there!")
 
     #Just a check to see if text input gets printed when we click join the network
