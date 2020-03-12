@@ -8,6 +8,7 @@ import helperFunctions as helper
 import ledgerFunctions as ledger
 import lock
 import encryption
+import time
 
 import threading
 from _thread import *
@@ -307,6 +308,8 @@ def send_file(c, filename):
     end = time.time()
     print("Finished running download of file in %.2f seconds" %  float(end - start))
     print(byte, "bytes sent")
+
+    time.sleep(0.5)
 
     # Close the connection with the client
     c.close()
