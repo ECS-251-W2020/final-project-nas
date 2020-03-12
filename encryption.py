@@ -41,12 +41,14 @@ def encrypt_using_public_key(data,public_key):
         #client encrypts its linux command using servers public key
         encrypted_message += rsa.encrypt(message, my_final_public_key)
 
-    return encrypted_message
+    # return encrypted_message
+    return data
 
 #Performs decryption on an encrypted message when keys
 #are present locally on a machine
 # byte -> byte
 def decrypt_using_private_key(encrypted_message):
+
 
     #Read the private key stored in secondary memory in PEM format
     with open(PRIVATE_KEY_PATH, mode='rb') as privatefile:
@@ -63,4 +65,5 @@ def decrypt_using_private_key(encrypted_message):
         #server decrypts it using its own private key
         decrypted_message += rsa.decrypt(message,my_final_private_key)
 
-    return decrypted_message
+    # return decrypted_message
+    return encrypted_message
