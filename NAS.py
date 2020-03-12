@@ -17,6 +17,6 @@ my_file = Path(LEDGER_PATH)
 # If ledger does not exist on your system, NAS GUI will open and help you get 
 # connected to the network.
 if my_file.is_file():
-	open_NAS_GUI()
-else:
 	open_fileBrowser()
+else:
+	open_NAS_GUI()
