@@ -201,6 +201,7 @@ def receive_file(filename):
         # get the key of the server we want to send the file to
         serverPubkey = ledger.get_pubkey(ip)
 
+        print(helper.find_ip(), ip)
         # check if the current ip in the ledger is the clients
         if(ip == helper.find_ip()):
 
@@ -213,6 +214,8 @@ def receive_file(filename):
             # copy the contents of the shard to the new file and decrypt the data
             file.write(tempFile.read())
 
+            print("here")
+
             # continue iterating through the loop
             continue
 
@@ -222,7 +225,6 @@ def receive_file(filename):
 
         # gets the shard filename as stored on the host computer
         shard = ledger.get_shard(filename, ip)
-        print(shard)
 
         # create a pull request for the server and encode it to bytes
         cmd = helper.pad_string("pull " + shard)
@@ -234,12 +236,14 @@ def receive_file(filename):
         # recieve confirmation response from server
         receivedMessage = s.recv(REQUEST_MAX_LENGTH).decode()
 
+
         # check if the servor responded with an error
         if(receivedMessage.split()[0] != "Error"):
 
             print("Receiving shard from", ip)
 
             while True:
+
 
                 #receive 1024 bytes at a time and decrypt the data
                 bytes = s.recv(1024)
@@ -248,6 +252,7 @@ def receive_file(filename):
                 #write the decrypted data to a file
                 file.write(bytes)
 
+
                 #break infinite loop once all bytes are transferred
                 if not bytes:
                     break
@@ -255,6 +260,7 @@ def receive_file(filename):
             # Server responded with an error
         else:
             print("Something went wrong while receiving the file.")
+
 
     # try to remove the original sharded message
     try:
@@ -403,7 +409,7 @@ def update_ledger():
 
         # server did respond with error
         else:
-            print("Something went wrong while updating the ledger to", s.gethostname())
+            print("Something went wrong while updating the ledger to", recv)
 
     print("Finished sending the ledger to everyone")
     print("******************************")
@@ -487,6 +493,5 @@ def main():
         else:
             print("Unrecognized command entered")
     except:
-        return
-    # s.close()
-main()
+        return    # s.close()
+# main()

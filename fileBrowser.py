@@ -7,6 +7,8 @@ import sys
 
 from ui import main
 
+fileNumber= "0"
+
 #
 # Class that allows the addition of column we use to provide
 # if the file is sharded or not
@@ -41,6 +43,7 @@ class ExtraColumnModel(QtWidgets.QFileSystemModel):
         # if the first column
         elif index.column() == 0:
             if role == QtCore.Qt.DisplayRole and filename[-1].isdigit():
+                fileNumber = filename[-1]
                 return filename[:-1]
 
         return super(ExtraColumnModel, self).data(index, role)
@@ -74,7 +77,7 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
     def file_picker(self):
 
         # get the filename 
-        filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', "~/",'*')[0]
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', "/Users/aakaashkapoor/Desktop/toSend",'*')[0]
         
         # call the the client read
         client.send_file(filename)
@@ -110,13 +113,15 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
 
         # if file is not present here
         if filetype[-1].isdigit() == True:
-            open = menu.addAction("get file from the network")
+            open = menu.addAction("Pull File")
             open.triggered.connect(self.read_file)
 
         # file exists in the curent system
         else:
-            open = menu.addAction("push file to the network")
+            open = menu.addAction("Push File")
             open.triggered.connect(self.write_file)
+            open = menu.addAction("Open File")
+            open.triggered.connect(self.open_file)
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
@@ -131,6 +136,9 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
         # call the the client read
         client.receive_file(filename)
 
+        # remove the file
+        os.remove("directory/" + filename + fileNumber)
+
     # Should call the file write to client
     def write_file(self):
 
@@ -138,7 +146,21 @@ class MyFileBrowser(main.Ui_MainWindow, QtWidgets.QMainWindow):
         filename = self.model.fileName(self.treeView.currentIndex())
 
         # call the the client read
-        client.send_file(filename)
+        client.send_file("directory/" + filename)
+
+        # remove the file
+        os.remove("directory/" + filename)
+
+    # Should call the file write to client
+    def open_file(self):
+
+        # get the current filename
+        filename = self.model.fileName(self.treeView.currentIndex())
+
+        # remove the file
+        os.system("open directory/" + filename)
+
+
 
 
 if __name__ == '__main__':

@@ -97,7 +97,7 @@ def check_request(request):
         return False
 
     # have only pull or push request
-    if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger", "lock"]):
+    if (request.split()[0].lower() not in ["pull", "push", "pull_ledger", "update_ledger", "lock", "load_balance"]):
         return False
 
     return True
@@ -154,6 +154,39 @@ def get_request(c, ip):
 
     elif (requestType == "lock"):
         lock_server(c, ip)
+
+    elif (requestType == "load_balance"):
+        load_balance()
+
+#
+# Load balance all the files this ip has
+#
+def load_balance():
+
+    # get the servers current ip
+    ip = helper.find_ip()
+
+    # get the list of files
+    list_of_files = ledger.get_files_for_owner(ip)
+
+    # send confirmation
+    c.send(helper.pad_string("Server is ready load balance its files").encode())
+
+    # call the clients to get all the files locally and push them back
+    for file in list_of_files:
+
+        # run a os call to get the file
+        os.system("python3 client.py pull " + file)
+
+        # run an os call to send back the file to all the network
+        os.system("python3 client.py push " + file)
+
+
+    # send confirmation
+    c.send(helper.pad_string("Server has done load balancing its files").encode())
+
+
+
 
 #
 # Lock a server to prevent multiple writes from occuring at the same time

@@ -70,10 +70,16 @@ def add_file(filename, ownerIP):
 		ledger = json.load(f)
 
 	# new node variable
-	file = { "Filename" : filename, "Owner IP" : ownerIP, "Shards" : get_ips()}
+	newfile = { "Filename" : filename, "Owner IP" : ownerIP, "Shards" : get_ips()}
+
+	# check if client is the atual owner of the file
+	for index, file in enumerate(ledger["Files"]):
+		if file["Filename"] == filename:
+			del ledger["Files"][index]
+			
 
 	# add it to the ledger
-	ledger["Files"].append(file)
+	ledger["Files"].append(newfile)
 
 	# Serializing json
 	ledger_object = json.dumps(ledger, indent = 4)
