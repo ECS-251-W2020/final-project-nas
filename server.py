@@ -156,12 +156,12 @@ def get_request(c, ip):
         lock_server(c, ip)
 
     elif (requestType == "load_balance"):
-        load_balance()
+        load_balance(c)
 
 #
 # Load balance all the files this ip has
 #
-def load_balance():
+def load_balance(c):
 
     # get the servers current ip
     ip = helper.find_ip()
@@ -184,8 +184,6 @@ def load_balance():
 
     # send confirmation
     c.send(helper.pad_string("Server has done load balancing its files").encode())
-
-
 
 
 #

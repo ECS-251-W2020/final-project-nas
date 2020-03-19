@@ -476,22 +476,21 @@ def main():
 
     pubKey = "MIGJAoGBAIyRlQ56E/7rsQmsulYp/2+FOMd3/B11wOY7WP0blJUaO1mBJwUSKWs0\nFCr49jbc2g1LROCENXS864IQozcS3Z+o+VKPd/oGnwnhx0PXIBhPaQ3o/b9Hm8nu\ndHakdI1nnu7rq5gug068tNK/L00BBWVtsTGHHfs1ClOvkoShZSSFAgMBAAE="
 
-    try:
 
-        if(sys.argv[1] == "push"):
-            send_file(sys.argv[2])
-        elif(sys.argv[1] == "pull"):
-            receive_file(sys.argv[2])
-        elif(sys.argv[1] == "pull_ledger"):
-            pull_ledger(sys.argv[2], pubKey)
-        elif(sys.argv[1] == "update_ledger"):
-            update_ledger()
-        elif(sys.argv[1] == "start_network"):
-            start_network()
-        elif(sys.argv[1] == "load_balance"):
-            load_balance()
-        else:
-            print("Unrecognized command entered")
-    except:
-        return    # s.close()
-# main()
+
+    if(sys.argv[1] == "push"):
+        send_file(sys.argv[2])
+    elif(sys.argv[1] == "pull"):
+        receive_file(sys.argv[2])
+    elif(sys.argv[1] == "pull_ledger"):
+        pull_ledger(sys.argv[2], pubKey)
+    elif(sys.argv[1] == "update_ledger"):
+        update_ledger()
+    elif(sys.argv[1] == "start_network"):
+        start_network()
+    elif(sys.argv[1] == "load_balance"):
+        load_balance()
+    else:
+        print("Unrecognized command entered")
+
+main()
