@@ -25,23 +25,23 @@ def create_keys():
 # Performs encryption a message usign a provided public key
 def encrypt_using_public_key(data,public_key):
 
-    # public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + public_key + \
-    #             "\n-----END RSA PUBLIC KEY-----\n"
-    # #print(public_key)
-    # my_final_public_key = rsa.PublicKey.load_pkcs1(public_key)
+    public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + public_key + \
+                "\n-----END RSA PUBLIC KEY-----\n"
+    #print(public_key)
+    my_final_public_key = rsa.PublicKey.load_pkcs1(public_key)
 
     # #split data into equally sized chunks
     # message_split = helper.split_data_chunk_size(data, MESSAGE_CHUNK_LIMIT)
+    message_split = []
 
     # #create an empty byte string for encrypted message
-    # encrypted_message = b''
+    encrypted_message = b''
 
-    # for message in message_split:
+    for message in message_split:
         
-    #     #client encrypts its linux command using servers public key
-    #     encrypted_message += rsa.encrypt(message, my_final_public_key)
+        #client encrypts its linux command using servers public key
+        encrypted_message += rsa.encrypt(message, my_final_public_key)
 
-    # return encrypted_message
     return data
 
 #Performs decryption on an encrypted message when keys
@@ -51,19 +51,20 @@ def decrypt_using_private_key(encrypted_message):
 
 
     # #Read the private key stored in secondary memory in PEM format
-    # with open(PRIVATE_KEY_PATH, mode='rb') as privatefile:
-    #     private_key_data = privatefile.read()
+    with open(PRIVATE_KEY_PATH, mode='rb') as privatefile:
+        private_key_data = privatefile.read()
 
     # #Convert the PEM format to normal private key format
-    # my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
+    my_final_private_key = rsa.PrivateKey.load_pkcs1(private_key_data)
 
     # message_split = helper.split_data_chunk_size(encrypted_message, ENCRYPTION_BYTE_LIMIT)
+    message_split = []
 
-    # decrypted_message = b''
+    decrypted_message = b''
 
-    # for message in message_split:
-    #     #server decrypts it using its own private key
-    #     decrypted_message += rsa.decrypt(message,my_final_private_key)
+    for message in message_split:
+        #server decrypts it using its own private key
+        decrypted_message += rsa.decrypt(message,my_final_private_key)
 
     # return decrypted_message
     return encrypted_message
