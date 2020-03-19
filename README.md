@@ -9,13 +9,16 @@ NAS is a decentralized peer to peer file system that focuses on storage efficien
 #### Installation:
 
 * You will need to install the PyQt5 and the PySide2 libraries for Python in order to run the GUI:
+      
       pip3 install PyQt5
       pip3 install PySide2
 
 * Clone this repository using:
+      
       git clone https://github.com/ECS-251-W2020/final-project-nas.git
 
 * Run the network using:
+      
       python3 NAS.py
 
 This should open up the NAS GUI which will allow you to create a new network or join an existing network. In order to join an existing network, you will need access to the IP address of any node in the network and their public key. Once you have joined or created a network, you can then push all of your files to the network and pull them back whenever you need to.
