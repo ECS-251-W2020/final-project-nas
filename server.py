@@ -181,6 +181,9 @@ def load_balance(c):
         # run an os call to send back the file to all the network
         os.system("python3 client.py push " + file)
 
+        # remove the local copy
+        os.system("rm directory/" + file)
+
 
     # send confirmation
     c.send(helper.pad_string("Server has done load balancing its files").encode())
