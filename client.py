@@ -196,7 +196,7 @@ def receive_file(filename):
         file = open("directory/" + filename, 'wb')
 
     # going through the list of ips and making the request
-    for index, ip in enumerate(ledger.get_ips()):
+    for index, ip in enumerate(ledger.get_ips_for_file(filename)):
 
         # get the key of the server we want to send the file to
         serverPubkey = ledger.get_pubkey(ip)
@@ -409,6 +409,46 @@ def update_ledger():
     print("******************************")
     print("******************************")
 
+def load_balance():
+
+    # logging
+    print("******************************")
+    print("******************************")
+    print("Beginning load balancing ")
+
+    # going through each ip
+    for ip in ledger.get_ips():
+
+        # get the key of the server we want to send to
+        serverPubkey = ledger.get_pubkey(ip)
+
+        # run the client
+        s = run_client(ip)
+
+        # create a push request for the server and encode it to bytes
+        cmd = "load_balance garbage"
+        encryptedCmd = encryption.encrypt_using_public_key(cmd.encode(), serverPubkey)
+        s.send(encryptedCmd)
+
+        # recieve response from server
+        recv = s.recv(REQUEST_MAX_LENGTH).decode()
+
+        # check if the servor responded with an error
+        if(recv.split(' ', 1)[0] != "Error"):
+
+            recv = s.recv(REQUEST_MAX_LENGTH).decode()
+
+            if(recv.split(' ', 1)[0] != "Error"):
+                print()
+
+            # server did respond with error
+            else:
+                print("Something went wrong while sending a load balance request", s.gethostname())
+
+    print("Finished load balancing")
+    print("******************************")
+    print("******************************")
+
 #
 # Creates a new network with the IP of the client as the first node
 #
@@ -430,7 +470,7 @@ def main():
 
     pubKey = "MIGJAoGBAIyRlQ56E/7rsQmsulYp/2+FOMd3/B11wOY7WP0blJUaO1mBJwUSKWs0\nFCr49jbc2g1LROCENXS864IQozcS3Z+o+VKPd/oGnwnhx0PXIBhPaQ3o/b9Hm8nu\ndHakdI1nnu7rq5gug068tNK/L00BBWVtsTGHHfs1ClOvkoShZSSFAgMBAAE="
 
-    try: 
+    try:
 
         if(sys.argv[1] == "push"):
             send_file(sys.argv[2])
@@ -442,6 +482,8 @@ def main():
             update_ledger()
         elif(sys.argv[1] == "start_network"):
             start_network()
+        elif(sys.argv[1] == "load_balance"):
+            load_balance()
         else:
             print("Unrecognized command entered")
     except:

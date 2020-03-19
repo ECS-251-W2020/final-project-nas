@@ -95,8 +95,13 @@ def get_shard(filename, IP):
 	with open(LEDGER_PATH) as f:
 		ledger = json.load(f)
 
-	return filename + str(get_ips().index(IP))
+	# list to store the ips for a file
+	ips = []
 
+	# check if client is the atual owner of the file
+	for file in ledger["Files"]:
+		if file["Filename"] == filename:
+			return filename + str(file["Shards"].index(IP))
 
 #
 # Function to check if the filename is owned by the IP
@@ -138,6 +143,52 @@ def get_pubkey(IP):
 
 	print("Key not found for IP")
 	return None
+
+#
+# Returns all the ips that store a file
+#
+def get_ips_for_file(filename):
+
+	# checks if ledger file exists
+	if path.exists(LEDGER_PATH) == False:
+		return False
+
+	# read the ledger file into a dictionary
+	with open(LEDGER_PATH) as f:
+		ledger = json.load(f)
+
+	# list to store the ips for a file
+	ips = []
+
+	# check if client is the atual owner of the file
+	for file in ledger["Files"]:
+		if file["Filename"] == filename:
+			ips = file["Shards"]
+
+	return ips
+
+#
+# Function that returns a list of files owned by a client
+#
+def get_files_for_owner(IP):
+
+	# checks if ledger file exists
+	if path.exists(LEDGER_PATH) == False:
+		return False
+
+	# read the ledger file into a dictionary
+	with open(LEDGER_PATH) as f:
+		ledger = json.load(f)
+
+	# list to store the filenames
+	files = []
+
+	# check if client is the atual owner of the file
+	for file in ledger["Files"]:
+		if file["Owner IP"] == IP:
+			files.append(file["Filename"])
+
+	return files
 
 #
 # Function to get the list of ips from the ledger
